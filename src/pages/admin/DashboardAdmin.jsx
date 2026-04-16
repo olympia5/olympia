@@ -157,10 +157,12 @@ const MembersTab = ({ clients, updateClient, deleteClient }) => {
                 <td className="px-5 py-4">
                   <span className={`text-[10px] px-2.5 py-1 rounded-lg font-bold border uppercase tracking-widest ${
                     c.status === 'active'
-                      ? 'bg-green-500/10 text-green-400 border-green-500/20 shadow-[0_0_10px_rgba(34,197,94,0.1)]'
-                      : 'bg-red-500/10 text-red-400 border-red-500/20'
+                      ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                      : c.status === 'pending'
+                        ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20 animate-pulse'
+                        : 'bg-red-500/10 text-red-400 border-red-500/20'
                   }`}>
-                    {c.status === 'active' ? 'Activo' : (c.status === 'expired' ? 'Vencido' : 'Pendiente')}
+                    {c.status === 'active' ? 'Activo' : (c.status === 'pending' ? 'Pendiente' : 'Vencido')}
                   </span>
                 </td>
                 <td className="px-5 py-4 text-white/50 text-xs whitespace-nowrap">
@@ -173,17 +175,30 @@ const MembersTab = ({ clients, updateClient, deleteClient }) => {
                 </td>
                 <td className="px-5 py-4 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button
-                      onClick={() => updateClient(c.id, { status: c.status === 'active' ? 'expired' : 'active' })}
-                      className={`p-2 rounded-xl transition-all ${
-                        c.status === 'active'
-                          ? 'text-yellow-400 hover:bg-yellow-500/10'
-                          : 'text-green-400 hover:bg-green-500/10'
-                      }`}
-                      title={c.status === 'active' ? 'Suspender' : 'Activar'}
-                    >
-                      {c.status === 'active' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
-                    </button>
+                    {c.status === 'pending' ? (
+                      <button
+                        onClick={() => updateClient(c.id, { 
+                          status: 'active',
+                          membership_start: new Date().toISOString(),
+                          membership_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+                        })}
+                        className="flex items-center gap-1.5 bg-green-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-green-500 transition-all shadow-[0_0_10px_rgba(22,163,74,0.3)]"
+                      >
+                        <UserCheck className="w-3 h-3" /> Aceptar Solicitud
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => updateClient(c.id, { status: c.status === 'active' ? 'expired' : 'active' })}
+                        className={`p-2 rounded-xl transition-all ${
+                          c.status === 'active'
+                            ? 'text-yellow-400 hover:bg-yellow-500/10'
+                            : 'text-green-400 hover:bg-green-500/10'
+                        }`}
+                        title={c.status === 'active' ? 'Suspender' : 'Activar'}
+                      >
+                        {c.status === 'active' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                      </button>
+                    )}
                     <button
                       onClick={() => { if (confirm(`¿Eliminar definitivamente a ${c.email}?`)) deleteClient(c.id); }}
                       className="p-2 rounded-xl text-white/20 hover:text-red-500 hover:bg-red-500/10 transition-all"
