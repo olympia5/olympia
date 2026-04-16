@@ -1,14 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import { DIET_TEMPLATES, ROUTINE_TEMPLATES, processDietText } from '../lib/plansLibrary';
 
 const AuthContext = createContext(null);
 
-// ---- Administradores (mock) ----
-const ADMIN_USERS = [
-  { email: 'pepito@pepito', password: 'contraseña123456', name: 'Pepito Admin', role: 'admin', id: 'admin-1' }
-];
-
-// ---- Frases motivacionales iniciales ----
+// ---- Frases motivacionales iniciales (fallback) ----
 const INITIAL_PHRASES = [
   "Hoy es día de guerra.",
   "La disciplina forja tu destino.",
@@ -22,290 +18,236 @@ const INITIAL_PHRASES = [
   "El dolor es la debilidad abandonando el cuerpo."
 ];
 
-// ---- Config por defecto ----
-const DEFAULT_SETTINGS = {
-  gymName: 'OLYMPIA',
-  gymLogo: '',
-  membershipPrice: '15000',
-  membershipCurrency: 'ARS',
-  mercadoPagoLink: 'https://mpago.la/olympia',
-  instagram: 'https://instagram.com/olympiagym',
-  whatsapp: 'https://wa.me/5491100000000',
-  tiktok: 'https://tiktok.com/@olympiagym',
-  motivationalPhrases: INITIAL_PHRASES,
-  schedules: [
-    { day: 'Lunes a Viernes', hours: '8:00 - 22:00' },
-    { day: 'Sábados', hours: '9:00 - 14:00' },
-    { day: 'Domingos', hours: 'CERRADO' },
-    { day: 'Feriados', hours: '9:00 - 14:00' },
-  ]
-};
-
-// ---- Clientes de prueba ----
-const INITIAL_CLIENTS = [
-  {
-    id: 'client-test-1',
-    email: 'socio@test.com',
-    password: '123456',
-    name: 'Socio Test',
-    role: 'client',
-    status: 'active',
-    membershipStart: new Date().toISOString(),
-    membershipEnd: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toISOString(),
-    profile: { weight: '80', sex: 'M', height: '175', age: '28', goal: 'musculo', dietPreference: 'carnivoro' },
-    memberNumber: 1001,
-    createdAt: new Date().toISOString(),
-  }
-];
-
-// ---- Helper: calcular días restantes ----
-export const getDaysRemaining = (membershipEnd) => {
-  if (!membershipEnd) return 0;
-  const diff = Math.ceil((new Date(membershipEnd) - new Date()) / (1000 * 60 * 60 * 24));
-  return Math.max(0, diff);
-};
-
-// ---- Helper: check si membresía expiró ----
-const checkAndUpdateExpiredMemberships = (clients) => {
-  const now = new Date();
-  return clients.map(c => {
-    if (c.status === 'active' && c.membershipEnd && new Date(c.membershipEnd) < now) {
-      return { ...c, status: 'expired' };
-    }
-    return c;
-  });
-};
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const [settings, setSettings] = useState(() => {
-    try {
-      const saved = localStorage.getItem('olympia_settings');
-      return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
-    } catch { return DEFAULT_SETTINGS; }
+  const [settings, setSettings] = useState({
+    gymName: 'OLYMPIA',
+    membershipPrice: '15000',
+    motivationalPhrases: INITIAL_PHRASES
   });
+  const [clients, setClients] = useState([]);
+  const [diets, setDiets] = useState([]);
+  const [routines, setRoutines] = useState([]);
 
-  const [clients, setClients] = useState(() => {
-    try {
-      const saved = localStorage.getItem('olympia_clients');
-      const parsed = saved ? JSON.parse(saved) : INITIAL_CLIENTS;
-      return checkAndUpdateExpiredMemberships(parsed);
-    } catch { return INITIAL_CLIENTS; }
-  });
-
-  const [diets, setDiets] = useState(() => {
-    try {
-      const saved = localStorage.getItem('olympia_diets');
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
-  });
-
-  const [routines, setRoutines] = useState(() => {
-    try {
-      const saved = localStorage.getItem('olympia_routines');
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
-  });
-
-  // ---- Cargar sesión guardada ----
+  // ---- 1. Listener de Sesión de Supabase ----
   useEffect(() => {
-    try {
-      const savedAuth = localStorage.getItem('olympia_auth');
-      if (savedAuth) {
-        const savedUser = JSON.parse(savedAuth);
-        if (savedUser.role === 'client') {
-          const fresh = clients.find(c => c.id === savedUser.id);
-          if (fresh) {
-            const { password: _, ...safeClient } = fresh;
-            setUser(safeClient);
-          } else {
-            setUser(savedUser);
-          }
-        } else {
-          setUser(savedUser);
-        }
+    // Verificar sesión inicial
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        fetchUserData(session.user);
+      } else {
+        setLoading(false);
       }
-    } catch { /* ignore */ }
-    setLoading(false);
+    });
+
+    // Cargar datos públicos (opcional, puedes hacerlo aquí o dentro de fetchUserData)
+    fetchPublicData();
+
+    // Escuchar cambios (login/logout/token refreshed)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        fetchUserData(session.user);
+      } else {
+        setUser(null);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  // ---- Migración: Asegurar números de socio a existentes ----
-  useEffect(() => {
-    if (clients.length > 0 && clients.some(c => !c.memberNumber)) {
-      let maxNum = Math.max(1000, ...clients.filter(c => c.memberNumber).map(c => c.memberNumber));
-      const updated = clients.map(c => {
-        if (!c.memberNumber) {
-          maxNum++;
-          return { ...c, memberNumber: maxNum };
-        }
-        return c;
-      });
-      saveClients(updated);
+  // ---- 2. Obtener datos extra del usuario (rol, nombre, perfil) ----
+  const fetchUserData = async (authUser) => {
+    try {
+      // 1. Obtener datos de la tabla 'clients'
+      const { data: clientData, error: clientErr } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('id', authUser.id)
+        .single();
+
+      if (clientErr) throw clientErr;
+
+      // 2. Obtener perfil
+      const { data: profileData } = await supabase
+        .from('client_profiles')
+        .select('*')
+        .eq('client_id', authUser.id)
+        .single();
+
+      // Combinar todo en el estado del usuario
+      const userData = {
+        ...authUser,
+        ...clientData,
+        profile: profileData || {},
+        role: clientData.role || 'client'
+      };
+
+      setUser(userData);
+      
+      // Si es admin, cargar lista completa de clientes
+      if (userData.role === 'admin') {
+        fetchAllData();
+      }
+    } catch (err) {
+      console.error("Error fetching user data:", err);
+    } finally {
+      setLoading(false);
     }
-  }, [clients]);
-
-  // ---- Sincronizar clientes a localStorage ----
-  const saveClients = (updated) => {
-    setClients(updated);
-    localStorage.setItem('olympia_clients', JSON.stringify(updated));
   };
 
-  const saveDiets = (updatedDiets) => {
-    setDiets(updatedDiets);
-    localStorage.setItem('olympia_diets', JSON.stringify(updatedDiets));
+  // ---- 3. Cargar datos globales para Admins y Public ----
+  const fetchPublicData = async () => {
+    const { data: dietList } = await supabase.from('diets').select('*');
+    if (dietList) setDiets(dietList);
+
+    const { data: routineList } = await supabase.from('routines_templates').select('*');
+    if (routineList) setRoutines(routineList);
+
+    const { data: gymSets } = await supabase.from('gym_settings').select('*').single();
+    if (gymSets) setSettings(prev => ({ ...prev, ...gymSets }));
   };
 
-  const saveRoutines = (updatedRoutines) => {
-    setRoutines(updatedRoutines);
-    localStorage.setItem('olympia_routines', JSON.stringify(updatedRoutines));
+  const fetchAllData = async () => {
+    const { data: allClients } = await supabase.from('clients').select('*, client_profiles(*)');
+    if (allClients) setClients(allClients);
+    fetchPublicData();
   };
 
-  // ---- REGISTRO de nuevo socio ----
-  const registerClient = (email, password) => {
-    if (!email.trim() || !password.trim()) return { success: false, error: 'Email y contraseña requeridos' };
-    if (password.length < 6) return { success: false, error: 'La contraseña debe tener al menos 6 caracteres' };
-    if (clients.find(c => c.email.toLowerCase() === email.toLowerCase())) {
-      return { success: false, error: 'Ya existe una cuenta con ese email' };
-    }
-    const newClient = {
-      id: `client-${Date.now()}`,
-      email: email.trim().toLowerCase(),
-      password: password,
+  // ---- 4. ACCIONES DE AUTH ----
+
+  const registerClient = async (email, password) => {
+    const { data, error } = await supabase.auth.signUp({ 
+      email, 
+      password 
+    });
+
+    if (error) return { success: false, error: error.message };
+
+    // Insertar en tabla public.clients
+    const { error: insError } = await supabase.from('clients').insert({
+      id: data.user.id,
       name: email.split('@')[0],
+      email: email,
       role: 'client',
-      status: 'pending',
-      membershipStart: null,
-      membershipEnd: null,
-      profile: { weight: '', sex: '', height: '', age: '', goal: '', dietPreference: 'carnivoro' },
-      memberNumber: Math.max(1000, ...clients.map(c => c.memberNumber || 0)) + 1,
-      createdAt: new Date().toISOString(),
-    };
-    const updated = [...clients, newClient];
-    saveClients(updated);
-    const { password: _, ...safeClient } = newClient;
-    setUser(safeClient);
-    localStorage.setItem('olympia_auth', JSON.stringify(safeClient));
+      status: 'pending'
+    });
+
+    if (insError) return { success: false, error: insError.message };
+
+    // Crear perfil vacío
+    await supabase.from('client_profiles').insert({ client_id: data.user.id });
+
     return { success: true };
   };
 
-  // ---- LOGIN por email+contraseña ----
-  const loginWithEmail = (email, password) => {
-    const admin = ADMIN_USERS.find(u => u.email === email && u.password === password);
-    if (admin) {
-      const { password: _, ...safeAdmin } = admin;
-      setUser(safeAdmin);
-      localStorage.setItem('olympia_auth', JSON.stringify(safeAdmin));
-      return { success: true, role: 'admin' };
+  const loginWithEmail = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  // ---- 5. GESTIÓN DE PERFIL Y MEMBRESÍA ----
+
+  const updateProfile = async (profileData) => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('client_profiles')
+      .update(profileData)
+      .eq('client_id', user.id);
+    
+    if (!error) {
+      fetchUserData(user); // Refrescar estado local
     }
-    const client = clients.find(c => c.email.toLowerCase() === email.toLowerCase() && c.password === password);
-    if (client) {
-      const { password: _, ...safeClient } = client;
-      setUser(safeClient);
-      localStorage.setItem('olympia_auth', JSON.stringify(safeClient));
-      return { success: true, role: 'client' };
-    }
-    return { success: false, error: 'Email o contraseña incorrectos' };
+    return { success: !error, error: error?.message };
   };
 
-  // ---- LOGOUT ----
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('olympia_auth');
-  };
-
-  // ---- Actualizar perfil ----
-  const updateProfile = (profileData) => {
-    if (!user || user.role !== 'client') return;
-    const updated = clients.map(c =>
-      c.id === user.id ? { ...c, profile: { ...c.profile, ...profileData } } : c
-    );
-    saveClients(updated);
-    const fresh = updated.find(c => c.id === user.id);
-    const { password: _, ...safeClient } = fresh;
-    setUser(safeClient);
-    localStorage.setItem('olympia_auth', JSON.stringify(safeClient));
-  };
-
-  // ---- Activar membresía ----
-  const activateMembership = () => {
-    if (!user || user.role !== 'client') return;
+  const activateMembership = async () => {
+    if (!user) return;
     const now = new Date();
     const end = new Date(now);
     end.setDate(end.getDate() + 30);
-    const updated = clients.map(c =>
-      c.id === user.id
-        ? { ...c, status: 'active', membershipStart: now.toISOString(), membershipEnd: end.toISOString() }
-        : c
-    );
-    saveClients(updated);
-    const fresh = updated.find(c => c.id === user.id);
-    const { password: _, ...safeClient } = fresh;
-    setUser(safeClient);
-    localStorage.setItem('olympia_auth', JSON.stringify(safeClient));
-    return { membershipEnd: end.toISOString() };
+
+    const { error } = await supabase
+      .from('clients')
+      .update({
+        status: 'active',
+        membership_start: now.toISOString(),
+        membership_end: end.toISOString()
+      })
+      .eq('id', user.id);
+
+    if (!error) fetchUserData(user);
+    return { success: !error, membershipEnd: end.toISOString() };
   };
 
-  // ---- Admin: gestión ----
-  const updateClient = (id, updates) => {
-    // Si se está intentando cambiar el número de socio, validar unicidad
-    if (updates.memberNumber) {
-      const num = parseInt(updates.memberNumber);
-      const exists = clients.find(c => c.memberNumber === num && c.id !== id);
-      if (exists) return { success: false, error: 'Ese número de socio ya está asignado' };
-      updates.memberNumber = num;
-    }
+  // ---- 6. ACCIONES ADMIN ----
 
-    const updated = clients.map(c => c.id === id ? { ...c, ...updates } : c);
-    saveClients(updated);
-    return { success: true };
+  const updateClient = async (id, updates) => {
+    const { error } = await supabase.from('clients').update(updates).eq('id', id);
+    if (!error) fetchAllData();
+    return { success: !error, error: error?.message };
   };
 
-  const deleteClient = (id) => {
-    saveClients(clients.filter(c => c.id !== id));
+  const deleteClient = async (id) => {
+    const { error } = await supabase.from('clients').delete().eq('id', id);
+    if (!error) fetchAllData();
   };
 
-  const updateSettings = (newSettings) => {
-    const updated = { ...settings, ...newSettings };
-    setSettings(updated);
-    localStorage.setItem('olympia_settings', JSON.stringify(updated));
+  const updateSettings = async (newSettings) => {
+    const { error } = await supabase.from('gym_settings').update(newSettings).eq('id', 1);
+    if (!error) setSettings(prev => ({ ...prev, ...newSettings }));
   };
 
-  const addDiet = (dietData) => {
-    const newDiet = { ...dietData, id: Date.now() };
-    saveDiets([...diets, newDiet]);
+  const addDiet = async (dietData) => {
+    const { error } = await supabase.from('diets').insert([dietData]);
+    if (!error) fetchPublicData();
+    return { success: !error, error: error?.message };
   };
 
-  const deleteDiet = (id) => {
-    saveDiets(diets.filter(d => d.id !== id));
+  const updateDiet = async (id, updatedData) => {
+    const { error } = await supabase.from('diets').update(updatedData).eq('id', id);
+    if (!error) fetchPublicData();
+    return { success: !error, error: error?.message };
   };
 
-  const updateDiet = (id, updatedData) => {
-    const updated = diets.map(d => d.id === id ? { ...d, ...updatedData } : d);
-    saveDiets(updated);
+  const deleteDiet = async (id) => {
+    const { error } = await supabase.from('diets').delete().eq('id', id);
+    if (!error) fetchPublicData();
+    return { success: !error, error: error?.message };
   };
 
-  const addRoutine = (routineData) => {
-    const newRoutine = { ...routineData, id: Date.now() };
-    saveRoutines([...routines, newRoutine]);
+  const addRoutine = async (routineData) => {
+    const { error } = await supabase.from('routines_templates').insert([routineData]);
+    if (!error) fetchPublicData();
+    return { success: !error, error: error?.message };
   };
 
-  const deleteRoutine = (id) => {
-    saveRoutines(routines.filter(r => r.id !== id));
+  const updateRoutine = async (id, updatedData) => {
+    const { error } = await supabase.from('routines_templates').update(updatedData).eq('id', id);
+    if (!error) fetchPublicData();
+    return { success: !error, error: error?.message };
   };
 
-  const updateRoutine = (id, updatedData) => {
-    const updated = routines.map(r => r.id === id ? { ...r, ...updatedData } : r);
-    saveRoutines(updated);
+  const deleteRoutine = async (id) => {
+    const { error } = await supabase.from('routines_templates').delete().eq('id', id);
+    if (!error) fetchPublicData();
+    return { success: !error, error: error?.message };
   };
+
+  // ---- 7. LÓGICA DE DIETAS Y RUTINAS (Templates) ----
 
   const getSuggestedDiet = (profile) => {
-    if (!profile?.goal || !profile?.dietPreference) return null;
+    if (!profile?.goal || !profile?.diet_preference) return null;
     const goalPlans = DIET_TEMPLATES[profile.goal];
     if (!goalPlans) return null;
     
-    const basePlan = goalPlans[profile.dietPreference] || goalPlans['carnivoro'];
+    const basePlan = goalPlans[profile.diet_preference] || goalPlans['carnivoro'];
     if (!basePlan) return null;
 
     return {
@@ -342,8 +284,9 @@ export const AuthProvider = ({ children }) => {
       registerClient, loginWithEmail, logout,
       updateProfile, activateMembership,
       updateClient, deleteClient,
-      updateSettings, addDiet, deleteDiet, updateDiet,
-      addRoutine, deleteRoutine, updateRoutine,
+      updateSettings,
+      addDiet, updateDiet, deleteDiet,
+      addRoutine, updateRoutine, deleteRoutine,
       getSuggestedDiet, getSuggestedRoutine,
       openDoor
     }}>

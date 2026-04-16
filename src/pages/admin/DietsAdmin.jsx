@@ -9,7 +9,7 @@ const DietsAdmin = () => {
   const [form, setForm] = useState({
     title: '',
     goal: 'perder_peso',
-    dietPreference: 'carnivoro',
+    diet_preference: 'carnivoro',
     sex: 'M',
     height: '',
     weight: '',
@@ -36,7 +36,7 @@ const DietsAdmin = () => {
     setShowForm(false);
     setEditingId(null);
     setForm({
-      title: '', goal: 'perder_peso', dietPreference: 'carnivoro', sex: 'M', 
+      title: '', goal: 'perder_peso', diet_preference: 'carnivoro', sex: 'M', 
       height: '', weight: '', age: '',
       desayuno: '', almuerzo: '', merienda: '', cena: ''
     });
@@ -46,7 +46,7 @@ const DietsAdmin = () => {
     setForm({
       title: diet.title,
       goal: diet.goal,
-      dietPreference: diet.dietPreference,
+      diet_preference: diet.diet_preference,
       sex: diet.sex,
       height: diet.height,
       weight: diet.weight,
@@ -64,7 +64,7 @@ const DietsAdmin = () => {
     setShowForm(false);
     setEditingId(null);
     setForm({
-      title: '', goal: 'perder_peso', dietPreference: 'carnivoro', sex: 'M', 
+      title: '', goal: 'perder_peso', diet_preference: 'carnivoro', sex: 'M', 
       height: '', weight: '', age: '',
       desayuno: '', almuerzo: '', merienda: '', cena: ''
     });
@@ -120,7 +120,7 @@ const DietsAdmin = () => {
               </div>
               <div>
                 <label className="text-xs text-white/40 uppercase tracking-widest mb-1 block">Preferencia Alimenticia</label>
-                <select value={form.dietPreference} onChange={e => setForm({...form, dietPreference: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
+                <select value={form.diet_preference} onChange={e => setForm({...form, diet_preference: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
                   <option value="celiaco">Celíaco</option>
                   <option value="carnivoro">Carnívoro</option>
                   <option value="vegano">Vegano</option>
@@ -176,7 +176,7 @@ const DietsAdmin = () => {
 
             <div className="flex justify-end pt-4">
               <button type="submit" className="btn-spartan px-8 py-3 text-sm flex items-center gap-2">
-                <Save className="w-4 h-4" /> {editingId ? 'Actualizar Dieta' : 'Guardar Dieta'}
+                <Plus className="w-4 h-4" /> {editingId ? 'Actualizar Dieta' : 'Guardar Dieta'}
               </button>
             </div>
           </form>
@@ -198,7 +198,7 @@ const DietsAdmin = () => {
                     <h3 className="text-xl font-bold font-bebas text-white uppercase tracking-widest">{diet.title}</h3>
                     <div className="flex flex-wrap gap-2 mt-2">
                       <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/50 uppercase">Obj: {diet.goal.replace('_', ' ')}</span>
-                      <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/50 uppercase">Dieta: {diet.dietPreference}</span>
+                      <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/50 uppercase">Dieta: {diet.diet_preference}</span>
                       <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/50 uppercase">Sexo: {diet.sex === 'M' ? 'Masculino' : diet.sex === 'F' ? 'Femenino' : diet.sex}</span>
                       {diet.height && <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/50 uppercase">Alt: {diet.height}cm</span>}
                       {diet.weight && <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/50 uppercase">Peso: {diet.weight}kg</span>}
