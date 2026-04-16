@@ -3,7 +3,7 @@ import {
   Users, Settings, Image, Key, BarChart3,
   UserCheck, UserX, Trash2, Save, Edit3,
   DoorOpen, Instagram, Phone, Link2, Clock,
-  Plus, Check, X, Eye, EyeOff, AlertTriangle, Quote, UploadCloud
+  Plus, Check, X, Eye, EyeOff, AlertTriangle, Quote, UploadCloud, Award
 } from 'lucide-react';
 import { useAuth, getDaysRemaining } from '../../context/AuthContext';
 
@@ -47,21 +47,62 @@ const OverviewTab = ({ clients }) => {
         ))}
       </div>
 
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-        <h3 className="text-lg font-bebas tracking-widest text-white mb-4">Últimos Socios Registrados</h3>
-        <div className="space-y-2">
-          {clients.slice(-5).reverse().map(c => (
-            <div key={c.id} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
-              <span className="text-sm text-white">{c.name || c.email} {c.surname || ''}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
-                c.status === 'active'
-                  ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                  : 'bg-red-500/10 text-red-400 border border-red-500/20'
-              }`}>
-                {c.status === 'active' ? 'Activo' : 'Vencido'}
-              </span>
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Últimos registros */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+          <h3 className="text-lg font-bebas tracking-widest text-white mb-4">Últimos Socios Registrados</h3>
+          <div className="space-y-2">
+            {clients.slice(-5).reverse().map(c => (
+              <div key={c.id} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                <span className="text-sm text-white">{c.name || c.email} {c.surname || ''}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                  c.status === 'active'
+                    ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                    : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                }`}>
+                  {c.status === 'active' ? 'Activo' : 'Vencido'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Podio de Guerreros (Placeholder) */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden">
+          <div className="relative z-10">
+            <h3 className="text-lg font-bebas tracking-widest text-white mb-6 flex items-center gap-2">
+              <Award className="w-5 h-5 text-olympia-red" />
+              Podio de Guerreros (Asistencia)
+            </h3>
+            
+            <div className="flex items-end justify-around h-40 gap-2 mt-4">
+              {/* 2nd Place */}
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] text-white/40 uppercase mb-2">Marcos R.</span>
+                <div className="w-16 bg-white/10 border-t-2 border-white/20 h-20 flex items-center justify-center relative">
+                  <span className="font-bebas text-2xl text-white/20">2</span>
+                </div>
+              </div>
+              
+              {/* 1st Place */}
+              <div className="flex flex-col items-center">
+                <Award className="w-6 h-6 text-yellow-500 mb-1 drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
+                <span className="text-xs font-bold text-white uppercase mb-2 underline decoration-olympia-red underline-offset-4">Julián G.</span>
+                <div className="w-20 bg-olympia-red/20 border-t-2 border-olympia-red h-28 flex items-center justify-center relative">
+                  <span className="font-bebas text-4xl text-white/40">1</span>
+                </div>
+              </div>
+              
+              {/* 3rd Place */}
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] text-white/40 uppercase mb-2">Elena V.</span>
+                <div className="w-16 bg-white/5 border-t-2 border-white/10 h-14 flex items-center justify-center relative">
+                  <span className="font-bebas text-xl text-white/20">3</span>
+                </div>
+              </div>
             </div>
-          ))}
+            <p className="text-[9px] text-center text-white/20 uppercase tracking-[0.2em] mt-6">Ranking del mes actual — Basado en check-ins</p>
+          </div>
         </div>
       </div>
     </div>

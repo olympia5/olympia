@@ -213,9 +213,28 @@ export const AuthProvider = ({ children }) => {
       .eq('client_id', user.id);
     
     if (!error) {
+      // Registrar snapshot en el historial de evolución si hay peso o grasa
+      if (profileData.weight_kg || profileData.fat_percent) {
+        await supabase.from('physical_evolution').insert({
+          client_id: user.id,
+          weight_kg: profileData.weight_kg || user.profile?.weight_kg,
+          fat_percent: profileData.fat_percent || user.profile?.fat_percent
+        });
+      }
       fetchUserData(user); // Refrescar estado local
     }
     return { success: !error, error: error?.message };
+  };
+
+  const getEvolutionHistory = async () => {
+    if (!user) return [];
+    const { data, error } = await supabase
+      .from('physical_evolution')
+      .select('*')
+      .eq('client_id', user.id)
+      .order('date', { ascending: true });
+    
+    return error ? [] : data;
   };
 
   const activateMembership = async () => {
@@ -360,7 +379,7 @@ export const AuthProvider = ({ children }) => {
       addDiet, updateDiet, deleteDiet,
       addRoutine, updateRoutine, deleteRoutine,
       getSuggestedDiet, getSuggestedRoutine,
-      openDoor
+      openDoor, getEvolutionHistory
     }}>
       {children}
     </AuthContext.Provider>
