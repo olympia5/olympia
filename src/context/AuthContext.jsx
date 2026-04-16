@@ -216,36 +216,58 @@ export const AuthProvider = ({ children }) => {
   // ---- 5. GESTIÓN DE PERFIL Y MEMBRESÍA ----
 
   const updateProfile = async (profileData) => {
-    if (!user) return;
+    if (!user) return { success: false, error: 'No user logged in' };
 
-    // Mapear de nombres de frontend a columnas de base de datos (snake_case)
-    const dbData = {
-      weight_kg: profileData.weight,
-      height_cm: profileData.height,
+    // Construir objeto solo con lo que existe seguro en la DB según schema.sql
+    const dbData = {};
+    if (profileData.weight) dbData.weight_kg = Number(profileData.weight);
+    if (profileData.height) dbData.height_cm = Number(profileData.height);
+    if (profileData.age) dbData.age = Number(profileData.age);
+    if (profileData.goal) dbData.goal = profileData.goal;
+    
+    // Estos campos podrían no existir todavía, los mandamos con cuidado
+    // Si fallan, reintaremos solo con los básicos
+    const extendedData = {
+      ...dbData,
       sex: profileData.sex,
-      age: profileData.age,
-      goal: profileData.goal,
       diet_preference: profileData.dietPreference,
       avatar: profileData.avatar
     };
 
-    const { error } = await supabase
+    console.log("Intentando guardar perfil:", extendedData);
+
+    const { error: firstError } = await supabase
       .from('client_profiles')
-      .update(dbData)
+      .update(extendedData)
       .eq('client_id', user.id);
     
-    if (!error) {
+    let finalError = firstError;
+
+    // Si falló por columnas inexistentes, reintentar solo con los campos básicos
+    if (firstError) {
+      console.warn("Fallo guardado extendido, reintentando con campos básicos...", firstError.message);
+      const { error: secondError } = await supabase
+        .from('client_profiles')
+        .update(dbData)
+        .eq('client_id', user.id);
+      finalError = secondError;
+    }
+    
+    if (!finalError) {
       // Registrar snapshot en el historial de evolución si hay peso
       if (dbData.weight_kg) {
-        await supabase.from('physical_evolution').insert({
+        await supabase.from('physical_evolution').upsert({
           client_id: user.id,
           weight_kg: dbData.weight_kg,
-          fat_percent: profileData.fat_percent || user.profile?.fat_percent
-        });
+          date: new Date().toISOString().split('T')[0]
+        }, { onConflict: 'client_id, date' });
       }
-      fetchUserData(user); // Refrescar estado local
+      await fetchUserData(user); // Refrescar estado local
+      return { success: true };
     }
-    return { success: !error, error: error?.message };
+
+    console.error("Error final al guardar perfil:", finalError.message);
+    return { success: false, error: finalError.message };
   };
 
   const getEvolutionHistory = async () => {
