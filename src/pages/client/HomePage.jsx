@@ -39,7 +39,7 @@ const HomePage = () => {
     <div className="min-h-screen">
 
       {/* ==== MEMBERSHIP ALERT BANNERS ==== */}
-      <div className="px-4 md:px-8 lg:px-16 pt-6 pb-0 max-w-6xl mx-auto space-y-3">
+      <div className="px-4 md:px-8 lg:px-16 pt-6 pb-0 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
 
         {/* Membresía pendiente / vencida → CTA para pagar */}
         {!isActive && (
@@ -111,13 +111,13 @@ const HomePage = () => {
         {/* Completar perfil */}
         {!profileComplete && (
           <NavLink to="/cliente/perfil"
-            className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+            className={`flex items-center justify-between gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all ${(!isActive && !isActive) ? '' : ''}`}
           >
             <div className="flex items-center gap-3">
               <User className="w-5 h-5 text-white/50 shrink-0" />
               <div>
-                <p className="text-sm font-bold text-white">Completá tu perfil</p>
-                <p className="text-xs text-white/40">Cargá tus datos físicos y objetivos para personalizar tu entrenamiento</p>
+                <p className="text-sm font-bold text-white uppercase tracking-tight">Completá tu perfil</p>
+                <p className="text-[10px] text-white/30 uppercase tracking-widest leading-tight">Cargá tus datos físicos y objetivos</p>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-white/30 shrink-0" />
