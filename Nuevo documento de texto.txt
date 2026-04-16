@@ -1,0 +1,30 @@
+Actúa como un desarrollador experto en Fullstack (React, Tailwind CSS, Supabase). Necesito crear una App Web para el 'Gimnasio Olympia'.
+
+Estética: Diseño Dark Mode minimalista, estilo gladiador moderno (negros, grises oscuros y acento en rojo espartano).
+
+Arquitectura: > 1. Lado Cliente: Acceso mediante Nombre, Apellido y DNI. Implementar un sistema de 'Token' en LocalStorage para auto-login tras el primer registro.
+2. Lado Admin: Acceso mediante Email y Contraseña (Supabase Auth).
+
+Funcionalidades Cliente:
+
+Dashboard con secciones: Inicio, Dieta, Rutina, Galería y Contactos.
+
+Formulario de datos: Carga de Peso, Altura, Edad, Objetivo y Constancia (3 o 5 días).
+
+Generación de Plan: La app debe mostrar una rutina de 6 a 8 ejercicios, con 4-5 series de 12-15 repeticiones cada uno.
+
+Dieta: Mostrar plan nutricional con botón para 'Cambiar alimento' (lógica de reemplazo).
+
+Rutina: Incluir un cronómetro de descanso simple entre series.
+
+Galería: Botón de icono en cada ejercicio para abrir un modal con el video de la técnica.
+
+Funcionalidades Admin:
+
+Panel de gestión de usuarios (ver datos y estado de cuota).
+
+Botón de 'Apertura Manual' de puerta.
+
+Subida de videos a la galería de ejercicios.
+
+Regla de Oro: Los datos son privados. Un cliente solo puede ver su propio plan (usar RLS de Supabase). Las rutinas y dietas deben basarse en principios reales de entrenamiento e hipertrofia."
