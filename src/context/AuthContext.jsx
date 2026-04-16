@@ -9,6 +9,35 @@ export const getDaysRemaining = (membershipEnd) => {
   return Math.max(0, diff);
 };
 
+// ---- Mapeo de Configuración (JS camelCase <-> DB snake_case) ----
+const mapSettingsToDB = (js) => {
+  const db = {};
+  if (js.gymName !== undefined) db.gym_name = js.gymName;
+  if (js.gymLogo !== undefined) db.gym_logo = js.gymLogo;
+  if (js.membershipPrice !== undefined) db.membership_price = js.membershipPrice;
+  if (js.membershipCurrency !== undefined) db.membership_currency = js.membershipCurrency;
+  if (js.mercadoPagoLink !== undefined) db.mercado_pago_link = js.mercadoPagoLink;
+  if (js.motivationalPhrases !== undefined) db.motivational_phrases = js.motivationalPhrases;
+  if (js.schedules !== undefined) db.schedules = js.schedules;
+  if (js.instagram !== undefined) db.instagram = js.instagram;
+  if (js.whatsapp !== undefined) db.whatsapp = js.whatsapp;
+  if (js.tiktok !== undefined) db.tiktok = js.tiktok;
+  return db;
+};
+
+const mapSettingsFromDB = (db) => ({
+  gymName: db.gym_name,
+  gymLogo: db.gym_logo,
+  membershipPrice: db.membership_price,
+  membershipCurrency: db.membership_currency,
+  mercadoPagoLink: db.mercado_pago_link,
+  motivationalPhrases: db.motivational_phrases,
+  schedules: db.schedules,
+  instagram: db.instagram,
+  whatsapp: db.whatsapp,
+  tiktok: db.tiktok
+});
+
 const AuthContext = createContext(null);
 
 // ---- Frases motivacionales iniciales (fallback) ----
@@ -121,7 +150,10 @@ export const AuthProvider = ({ children }) => {
     if (routineList) setRoutines(routineList);
 
     const { data: gymSets } = await supabase.from('gym_settings').select('*').single();
-    if (gymSets) setSettings(prev => ({ ...prev, ...gymSets }));
+    if (gymSets) {
+      const mapped = mapSettingsFromDB(gymSets);
+      setSettings(prev => ({ ...prev, ...mapped }));
+    }
   };
 
   const fetchAllData = async () => {
@@ -216,10 +248,11 @@ export const AuthProvider = ({ children }) => {
 
   const updateSettings = async (newSettings) => {
     try {
+      const dbData = mapSettingsToDB(newSettings);
+      // Usamos upsert para que si la fila 1 no existe, se cree automáticamente
       const { error } = await supabase
         .from('gym_settings')
-        .update(newSettings)
-        .eq('id', 1);
+        .upsert({ id: 1, ...dbData });
       
       if (error) throw error;
       

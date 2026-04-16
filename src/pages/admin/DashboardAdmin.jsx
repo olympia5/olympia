@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Users, Settings, Image, Key, BarChart3,
   UserCheck, UserX, Trash2, Save, Edit3,
@@ -229,6 +229,16 @@ const SettingsTab = ({ settings, updateSettings }) => {
     motivationalPhrases: settings.motivationalPhrases || [],
     schedules: settings.schedules || []
   });
+
+  // Sincronizar el formulario si los settings cambian (ej: al cargar de Supabase)
+  useEffect(() => {
+    setForm({
+      ...settings,
+      motivationalPhrases: settings.motivationalPhrases || [],
+      schedules: settings.schedules || []
+    });
+  }, [settings]);
+
   const [saved, setSaved] = useState(false);
   const [savedIdentity, setSavedIdentity] = useState(false);
   const [dragActive, setDragActive] = useState(false);
