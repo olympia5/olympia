@@ -9,7 +9,7 @@ const DietsAdmin = () => {
   const [form, setForm] = useState({
     title: '',
     goal: 'perder_peso',
-    diet_preference: 'carnivoro',
+    dietPreference: 'carnivoro',
     sex: 'M',
     height: '',
     weight: '',
@@ -19,34 +19,43 @@ const DietsAdmin = () => {
     merienda: '',
     cena: ''
   });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterGoal, setFilterGoal] = useState('all');
+  const [filterPreference, setFilterPreference] = useState('all');
+  const [showFilters, setShowFilters] = useState(false);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!form.title) {
       alert("Por favor ingresa un título para esta dieta.");
       return;
     }
     
+    let result;
     if (editingId) {
-      updateDiet(editingId, form);
+      result = await updateDiet(editingId, form);
     } else {
-      addDiet(form);
+      result = await addDiet(form);
     }
-    
-    setShowForm(false);
-    setEditingId(null);
-    setForm({
-      title: '', goal: 'perder_peso', diet_preference: 'carnivoro', sex: 'M', 
-      height: '', weight: '', age: '',
-      desayuno: '', almuerzo: '', merienda: '', cena: ''
-    });
+
+    if (result?.success) {
+      setShowForm(false);
+      setEditingId(null);
+      setForm({
+        title: '', goal: 'perder_peso', dietPreference: 'carnivoro', sex: 'M', 
+        height: '', weight: '', age: '',
+        desayuno: '', almuerzo: '', merienda: '', cena: ''
+      });
+    } else {
+      alert("Error al guardar la dieta: " + (result?.error || "Desconocido"));
+    }
   };
 
   const handleEdit = (diet) => {
     setForm({
       title: diet.title,
       goal: diet.goal,
-      diet_preference: diet.diet_preference,
+      dietPreference: diet.dietPreference || diet.diet_preference,
       sex: diet.sex,
       height: diet.height,
       weight: diet.weight,
@@ -64,7 +73,7 @@ const DietsAdmin = () => {
     setShowForm(false);
     setEditingId(null);
     setForm({
-      title: '', goal: 'perder_peso', diet_preference: 'carnivoro', sex: 'M', 
+      title: '', goal: 'perder_peso', dietPreference: 'carnivoro', sex: 'M', 
       height: '', weight: '', age: '',
       desayuno: '', almuerzo: '', merienda: '', cena: ''
     });
@@ -72,20 +81,115 @@ const DietsAdmin = () => {
 
   return (
     <div className="p-4 md:p-8 min-h-full space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <h1 className="text-5xl font-bebas text-white tracking-widest">Gestión de Dietas</h1>
-          <p className="text-xs text-white/30 uppercase tracking-[0.2em] mt-1">
-            Administración Nutricional ( sin alcohol, sin aderezos, sin azucar, sin harina )
+          <h1 className="text-5xl font-bebas text-white tracking-widest leading-none">Gestión de Dietas</h1>
+          <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mt-1">
+            Administración Nutricional Olympia
           </p>
         </div>
+
         {!showForm && (
-          <button 
-            onClick={() => setShowForm(true)}
-            className="btn-spartan flex items-center justify-center gap-2 px-6 py-3 text-sm"
-          >
-            <Plus className="w-4 h-4" /> Cargar Dieta
-          </button>
+          <div className="flex flex-col sm:flex-row items-center gap-3 flex-1 lg:justify-end">
+            {/* Buscador compacto */}
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                placeholder="Buscar dieta..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-olympia-red transition-all pl-9"
+              />
+              <svg className="w-4 h-4 text-white/20 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+
+            {/* BOTÓN FILTRAR */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all text-xs font-bold uppercase tracking-widest ${
+                  (filterGoal !== 'all' || filterPreference !== 'all')
+                    ? 'bg-olympia-red/20 border-olympia-red text-olympia-red' 
+                    : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                }`}
+              >
+                <Plus className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-45' : ''}`} />
+                {showFilters ? 'Cerrar Filtros' : 'Filtrar'}
+              </button>
+
+              {/* DROPDOWN DE FILTROS */}
+              {showFilters && (
+                <div className="absolute top-full right-0 mt-2 w-72 bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl p-5 z-50 shadow-[0_10px_40px_rgba(0,0,0,0.8)] animate-in fade-in zoom-in duration-200">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-[10px] text-olympia-red font-bold uppercase tracking-widest block mb-2">Por Objetivo</label>
+                      <div className="grid grid-cols-1 gap-1">
+                        {[
+                          { id: 'all', label: 'Todos los Objetivos' },
+                          { id: 'perder_peso', label: 'Perder Peso' },
+                          { id: 'musculo', label: 'Ganar Músculo' },
+                          { id: 'rendimiento', label: 'Alto Rendimiento' },
+                          { id: 'resistencia', label: 'Resistencia' }
+                        ].map(g => (
+                          <button
+                            key={g.id}
+                            onClick={() => { setFilterGoal(g.id); setShowFilters(false); }}
+                            className={`text-left px-3 py-2 rounded-lg text-xs transition-colors ${
+                              filterGoal === g.id ? 'bg-olympia-red text-white' : 'text-white/40 hover:bg-white/5 hover:text-white'
+                            }`}
+                          >
+                            {g.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <hr className="border-white/5" />
+
+                    <div>
+                      <label className="text-[10px] text-olympia-red font-bold uppercase tracking-widest block mb-2">Por Preferencia</label>
+                      <div className="grid grid-cols-1 gap-1">
+                        {[
+                          { id: 'all', label: 'Global (Todo)' },
+                          { id: 'carnivoro', label: 'Carnívoro' },
+                          { id: 'celiaco', label: 'Celíaco' },
+                          { id: 'vegano', label: 'Vegano' },
+                          { id: 'vegetariano', label: 'Vegetariano' }
+                        ].map(p => (
+                          <button
+                            key={p.id}
+                            onClick={() => { setFilterPreference(p.id); setShowFilters(false); }}
+                            className={`text-left px-3 py-2 rounded-lg text-xs transition-colors ${
+                              filterPreference === p.id ? 'bg-olympia-red text-white' : 'text-white/40 hover:bg-white/5 hover:text-white'
+                            }`}
+                          >
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={() => { setFilterGoal('all'); setFilterPreference('all'); setShowFilters(false); }}
+                      className="w-full py-2 text-[10px] uppercase font-bold text-white/20 hover:text-white transition-colors border-t border-white/5 mt-2 pt-2"
+                    >
+                      Limpiar Filtros
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* BOTÓN CARGAR */}
+            <button 
+              onClick={() => setShowForm(true)}
+              className="btn-spartan flex items-center justify-center gap-2 px-6 py-2.5 text-xs whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4" /> Cargar Dieta
+            </button>
+          </div>
         )}
       </div>
 
@@ -120,7 +224,7 @@ const DietsAdmin = () => {
               </div>
               <div>
                 <label className="text-xs text-white/40 uppercase tracking-widest mb-1 block">Preferencia Alimenticia</label>
-                <select value={form.diet_preference} onChange={e => setForm({...form, diet_preference: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
+                <select value={form.dietPreference} onChange={e => setForm({...form, dietPreference: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
                   <option value="celiaco">Celíaco</option>
                   <option value="carnivoro">Carnívoro</option>
                   <option value="vegano">Vegano</option>
@@ -191,14 +295,21 @@ const DietsAdmin = () => {
               No hay dietas cargadas aún. Usa el botón "Cargar Dieta" para empezar.
             </div>
           ) : (
-            diets.map(diet => (
-              <div key={diet.id} className="bg-black/40 border border-white/10 rounded-xl p-5 hover:border-olympia-red/30 transition-all group">
+            diets
+              .filter(diet => {
+                const matchesSearch = diet.title.toLowerCase().includes(searchTerm.toLowerCase());
+                const matchesGoal = filterGoal === 'all' || diet.goal === filterGoal;
+                const matchesPref = filterPreference === 'all' || (diet.dietPreference || diet.diet_preference) === filterPreference;
+                return matchesSearch && matchesGoal && matchesPref;
+              })
+              .map(diet => (
+                <div key={diet.id} className="bg-black/40 border border-white/10 rounded-xl p-5 hover:border-olympia-red/30 transition-all group">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="text-xl font-bold font-bebas text-white uppercase tracking-widest">{diet.title}</h3>
                     <div className="flex flex-wrap gap-2 mt-2">
                       <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/50 uppercase">Obj: {diet.goal.replace('_', ' ')}</span>
-                      <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/50 uppercase">Dieta: {diet.diet_preference}</span>
+                      <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/50 uppercase">Dieta: {diet.dietPreference || diet.diet_preference}</span>
                       <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/50 uppercase">Sexo: {diet.sex === 'M' ? 'Masculino' : diet.sex === 'F' ? 'Femenino' : diet.sex}</span>
                       {diet.height && <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/50 uppercase">Alt: {diet.height}cm</span>}
                       {diet.weight && <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/50 uppercase">Peso: {diet.weight}kg</span>}

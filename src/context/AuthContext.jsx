@@ -154,7 +154,14 @@ export const AuthProvider = ({ children }) => {
   // ---- 3. Cargar datos globales para Admins y Public ----
   const fetchPublicData = async () => {
     const { data: dietList } = await supabase.from('diets').select('*');
-    if (dietList) setDiets(dietList);
+    if (dietList) {
+      // Mapear de Snake_Case (DB) a CamelCase (Frontend)
+      const mappedDiets = dietList.map(d => ({
+        ...d,
+        dietPreference: d.diet_preference || d.dietPreference
+      }));
+      setDiets(mappedDiets);
+    }
 
     const { data: routineList } = await supabase.from('routines_templates').select('*');
     if (routineList) setRoutines(routineList);
@@ -369,15 +376,68 @@ export const AuthProvider = ({ children }) => {
   };
 
   const addDiet = async (dietData) => {
-    const { error } = await supabase.from('diets').insert([dietData]);
-    if (!error) fetchPublicData();
-    return { success: !error, error: error?.message };
+    try {
+      const dbData = {
+        title: dietData.title,
+        goal: dietData.goal,
+        diet_preference: dietData.dietPreference,
+        sex: dietData.sex,
+        height: (dietData.height && dietData.height.trim() !== "") ? parseFloat(dietData.height) : null,
+        weight: (dietData.weight && dietData.weight.trim() !== "") ? parseFloat(dietData.weight) : null,
+        age: (dietData.age && dietData.age.trim() !== "") ? dietData.age : null,
+        desayuno: dietData.desayuno,
+        almuerzo: dietData.almuerzo,
+        merienda: dietData.merienda,
+        cena: dietData.cena
+      };
+
+      console.log("Saving diet (INSERT):", dbData);
+      const { data, error } = await supabase.from('diets').insert([dbData]).select();
+      
+      if (error) {
+        console.error("Supabase INSERT Error:", error);
+        return { success: false, error: error.message || error.code };
+      }
+      
+      console.log("Save successful:", data);
+      await fetchPublicData();
+      return { success: true };
+    } catch (err) {
+      console.error("Runtime exception in addDiet:", err);
+      return { success: false, error: err.message };
+    }
   };
 
   const updateDiet = async (id, updatedData) => {
-    const { error } = await supabase.from('diets').update(updatedData).eq('id', id);
-    if (!error) fetchPublicData();
-    return { success: !error, error: error?.message };
+    try {
+      const dbData = {
+        title: updatedData.title,
+        goal: updatedData.goal,
+        diet_preference: updatedData.dietPreference,
+        sex: updatedData.sex,
+        height: (updatedData.height && updatedData.height.trim() !== "") ? parseFloat(updatedData.height) : null,
+        weight: (updatedData.weight && updatedData.weight.trim() !== "") ? parseFloat(updatedData.weight) : null,
+        age: (updatedData.age && updatedData.age.trim() !== "") ? updatedData.age : null,
+        desayuno: updatedData.desayuno,
+        almuerzo: updatedData.almuerzo,
+        merienda: updatedData.merienda,
+        cena: updatedData.cena
+      };
+
+      console.log("Updating diet (UPDATE):", id, dbData);
+      const { error } = await supabase.from('diets').update(dbData).eq('id', id);
+      
+      if (error) {
+        console.error("Supabase UPDATE Error:", error);
+        return { success: false, error: error.message || error.code };
+      }
+      
+      await fetchPublicData();
+      return { success: true };
+    } catch (err) {
+      console.error("Runtime exception in updateDiet:", err);
+      return { success: false, error: err.message };
+    }
   };
 
   const deleteDiet = async (id) => {
@@ -407,11 +467,11 @@ export const AuthProvider = ({ children }) => {
   // ---- 7. LÓGICA DE DIETAS Y RUTINAS (Templates) ----
 
   const getSuggestedDiet = (profile) => {
-    if (!profile?.goal || !profile?.diet_preference) return null;
+    if (!profile?.goal || !profile?.dietPreference) return null;
     const goalPlans = DIET_TEMPLATES[profile.goal];
     if (!goalPlans) return null;
     
-    const basePlan = goalPlans[profile.diet_preference] || goalPlans['carnivoro'];
+    const basePlan = goalPlans[profile.dietPreference] || goalPlans['carnivoro'];
     if (!basePlan) return null;
 
     return {
