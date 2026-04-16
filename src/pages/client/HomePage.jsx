@@ -117,7 +117,7 @@ const HomePage = () => {
               <User className="w-5 h-5 text-white/50 shrink-0" />
               <div>
                 <p className="text-sm font-bold text-white uppercase tracking-tight">Completá tu perfil</p>
-                <p className="text-[10px] text-white/30 uppercase tracking-widest leading-tight">Cargá tus datos físicos y objetivos</p>
+                <p className="text-[10px] text-white/30 uppercase tracking-widest leading-tight">Cargá tus datos físicos y objetivos para comenzar con el entrenamiento...</p>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-white/30 shrink-0" />

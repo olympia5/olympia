@@ -113,18 +113,28 @@ export const AuthProvider = ({ children }) => {
 
       if (clientErr) throw clientErr;
 
-      // 2. Obtener perfil
-      const { data: profileData } = await supabase
+      // 2. Obtener perfil y mapear a nombres de frontend
+      const { data: rawProfile } = await supabase
         .from('client_profiles')
         .select('*')
         .eq('client_id', authUser.id)
         .single();
 
+      const profile = rawProfile ? {
+        weight: rawProfile.weight_kg,
+        height: rawProfile.height_cm,
+        sex: rawProfile.sex,
+        age: rawProfile.age,
+        goal: rawProfile.goal,
+        dietPreference: rawProfile.diet_preference,
+        avatar: rawProfile.avatar
+      } : {};
+
       // Combinar todo en el estado del usuario
       const userData = {
         ...authUser,
         ...clientData,
-        profile: profileData || {},
+        profile,
         role: clientData.role || 'client'
       };
 
@@ -207,17 +217,29 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = async (profileData) => {
     if (!user) return;
+
+    // Mapear de nombres de frontend a columnas de base de datos (snake_case)
+    const dbData = {
+      weight_kg: profileData.weight,
+      height_cm: profileData.height,
+      sex: profileData.sex,
+      age: profileData.age,
+      goal: profileData.goal,
+      diet_preference: profileData.dietPreference,
+      avatar: profileData.avatar
+    };
+
     const { error } = await supabase
       .from('client_profiles')
-      .update(profileData)
+      .update(dbData)
       .eq('client_id', user.id);
     
     if (!error) {
-      // Registrar snapshot en el historial de evolución si hay peso o grasa
-      if (profileData.weight_kg || profileData.fat_percent) {
+      // Registrar snapshot en el historial de evolución si hay peso
+      if (dbData.weight_kg) {
         await supabase.from('physical_evolution').insert({
           client_id: user.id,
-          weight_kg: profileData.weight_kg || user.profile?.weight_kg,
+          weight_kg: dbData.weight_kg,
           fat_percent: profileData.fat_percent || user.profile?.fat_percent
         });
       }
