@@ -209,7 +209,11 @@ const MembersTab = ({ clients, updateClient, deleteClient }) => {
 // Tab: Configuración del sitio
 // ========================
 const SettingsTab = ({ settings, updateSettings }) => {
-  const [form, setForm] = useState({ ...settings });
+  const [form, setForm] = useState({ 
+    ...settings,
+    motivationalPhrases: settings.motivationalPhrases || [],
+    schedules: settings.schedules || []
+  });
   const [saved, setSaved] = useState(false);
   const [savedIdentity, setSavedIdentity] = useState(false);
   const [dragActive, setDragActive] = useState(false);

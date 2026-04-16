@@ -31,7 +31,15 @@ export const AuthProvider = ({ children }) => {
   const [settings, setSettings] = useState({
     gymName: 'OLYMPIA',
     membershipPrice: '15000',
-    motivationalPhrases: INITIAL_PHRASES
+    membershipCurrency: 'ARS',
+    motivationalPhrases: INITIAL_PHRASES,
+    schedules: [
+      { day: 'Lunes a Viernes', hours: '08:00 - 22:00' },
+      { day: 'Sábados', hours: '09:00 - 18:00' }
+    ],
+    instagram: '',
+    whatsapp: '',
+    tiktok: ''
   });
   const [clients, setClients] = useState([]);
   const [diets, setDiets] = useState([]);
