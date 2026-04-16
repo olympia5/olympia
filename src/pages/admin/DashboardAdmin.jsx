@@ -73,12 +73,15 @@ const OverviewTab = ({ clients }) => {
 // ========================
 const MembersTab = ({ clients, updateClient, deleteClient }) => {
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // all, active, pending, expired
   const [editingNumber, setEditingNumber] = useState(null); // { id, value }
   const [errorStatus, setErrorStatus] = useState({ id: null, msg: '' });
 
-  const filtered = clients.filter(c =>
-    `${c.name} ${c.email} ${c.surname} ${c.member_number || c.memberNumber}`.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = clients.filter(c => {
+    const matchesSearch = `${c.name} ${c.email} ${c.surname} ${c.member_number}`.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const handleUpdateNumber = async (id, newValue) => {
     // Permitir 0 o vacío, solo retornar si es undefined o NaN (no numérico)
@@ -96,14 +99,37 @@ const MembersTab = ({ clients, updateClient, deleteClient }) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <input
-          type="text"
-          placeholder="Buscar por nombre, email o N° de socio..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-olympia-red transition-all"
-        />
+      <div className="flex flex-col md:flex-row items-center gap-3">
+        <div className="relative flex-1 w-full">
+          <input
+            type="text"
+            placeholder="Buscar por nombre, email o N° de socio..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-olympia-red transition-all"
+          />
+        </div>
+        
+        <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10 w-full md:w-auto">
+          {[
+            { id: 'all', label: 'Todos' },
+            { id: 'active', label: 'Activos' },
+            { id: 'pending', label: 'Pendientes' },
+            { id: 'expired', label: 'Vencidos' }
+          ].map(f => (
+            <button
+              key={f.id}
+              onClick={() => setStatusFilter(f.id)}
+              className={`flex-1 md:flex-none px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                statusFilter === f.id
+                  ? 'bg-olympia-red text-white shadow-[0_0_10px_rgba(220,38,38,0.3)]'
+                  : 'text-white/40 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
