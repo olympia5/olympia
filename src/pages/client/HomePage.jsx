@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Activity, ChevronRight, Swords, User, AlertTriangle, Timer, Camera, X, DoorOpen, CheckCircle2, Scan, TrendingUp, Scale, Plus, BarChart3 } from 'lucide-react';
+import { Activity, ChevronRight, Swords, User, AlertTriangle, Timer, Camera, X, DoorOpen, CheckCircle2, Scan } from 'lucide-react';
 import { useAuth, getDaysRemaining } from '../../context/AuthContext';
+
+// FORCED UPDATE: 2026-04-16 - Cleaned Stats UI
 
 
 
@@ -139,16 +141,6 @@ const HomePage = () => {
             {currentPhrase.split(' ').slice(-1)[0].toUpperCase()}
           </h2>
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <NavLink 
-              to="/cliente/progreso"
-              className="flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-bold uppercase tracking-widest hover:bg-white/10 transition-all group"
-            >
-              <BarChart3 className="w-5 h-5 text-olympia-red group-hover:scale-110 transition-transform" />
-              Ver Rendimiento Gráfico
-            </NavLink>
-          </div>
-
           {/* Profile summary if complete */}
           {profileComplete && (
             <div className="flex flex-wrap justify-center gap-3 mb-8">
@@ -179,94 +171,7 @@ const HomePage = () => {
         </div>
       </section>
       
-      {/* ==== EVOLUCIÓN FÍSICA ==== */}
-      {profileComplete && (
-        <section className="px-4 md:px-8 lg:px-16 py-12 bg-black/50 border-y border-white/5">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-3xl font-bebas tracking-wider text-white flex items-center gap-2">
-                  <TrendingUp className="w-6 h-6 text-olympia-red" />
-                  Evolución Física
-                </h2>
-                <p className="text-xs text-white/30 uppercase tracking-widest mt-1">Historial de tu progreso en el tiempo</p>
-              </div>
-              <NavLink to="/cliente/perfil" className="p-2 bg-white/5 border border-white/10 rounded-xl text-white/50 hover:text-white transition-all" title="Actualizar peso">
-                <Plus className="w-5 h-5" />
-              </NavLink>
-            </div>
-
-            {history.length < 1 ? (
-              <div className="p-12 border-2 border-dashed border-white/5 rounded-3xl text-center">
-                <Scale className="w-12 h-12 text-white/10 mx-auto mb-4" />
-                <p className="text-white/40 text-sm">Cargá tu peso en el perfil para ver tu progreso.</p>
-              </div>
-            ) : (
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-10">
-                <div className="h-64 w-full relative">
-                  <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
-                    {/* Grid lines */}
-                    {[0, 25, 50, 75, 100].map(p => (
-                      <line key={p} x1="0" y1={`${p}%`} x2="100%" y2={`${p}%`} stroke="white" strokeOpacity="0.05" />
-                    ))}
-                    
-                    {/* Points & Lines */}
-                    {(() => {
-                      const weights = history.map(h => Number(h.weight_kg));
-                      const maxW = Math.max(...weights) * 1.05;
-                      const minW = Math.min(...weights) * 0.95;
-                      const range = maxW - minW || 1;
-                      
-                      const points = history.map((h, i) => {
-                        const x = history.length > 1 ? (i / (history.length - 1)) * 100 : 50;
-                        const y = 100 - ((Number(h.weight_kg) - minW) / range) * 100;
-                        return `${x},${y}`;
-                      }).join(' ');
-
-                      return (
-                        <>
-                          <polyline
-                            points={points.split(' ').map(p => {
-                              const [x, y] = p.split(',');
-                              return `${x}% ${y}%`;
-                            }).join(' ')}
-                            fill="none"
-                            stroke="#dc2626"
-                            strokeWidth="3"
-                            strokeLinejoin="round"
-                            className="drop-shadow-[0_0_10px_rgba(220,38,38,0.5)]"
-                          />
-                          {history.map((h, i) => {
-                            const x = (i / (history.length - 1)) * 100;
-                            const y = 100 - ((Number(h.weight_kg) - minW) / range) * 100;
-                            return (
-                              <g key={i}>
-                                <circle cx={`${x}%`} cy={`${y}%`} r="4" fill="#dc2626" />
-                                <text x={`${x}%`} y={`${y}%`} dy="-12" textAnchor="middle" fill="#fff" fontSize="10" className="font-bold">
-                                  {h.weight_kg}kg
-                                </text>
-                              </g>
-                            );
-                          })}
-                        </>
-                      );
-                    })()}
-                  </svg>
-                </div>
-                <div className="flex justify-between mt-6 pt-6 border-t border-white/5">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-olympia-red" />
-                    <span className="text-[10px] text-white/50 uppercase tracking-widest">Peso corporal (kg)</span>
-                  </div>
-                  <div className="text-[10px] text-white/30 uppercase tracking-[0.2em] whitespace-nowrap">
-                    {new Date(history[0].date).toLocaleDateString()} — {new Date(history[history.length-1].date).toLocaleDateString()}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
+      {/* ==== MODAL SCANNER (YA EXISTENTE) ==== */}
 
       {/* ==== QR SCANNER MODAL ==== */}
       {showScanner && (
