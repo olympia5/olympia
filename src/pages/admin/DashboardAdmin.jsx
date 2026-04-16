@@ -120,19 +120,34 @@ const MembersTab = ({ clients, updateClient, deleteClient }) => {
               <tr key={c.id} className="hover:bg-white/5 transition-colors group">
                 <td className="px-5 py-4">
                   {editingNumber?.id === c.id ? (
-                    <div className="space-y-1">
-                      <input 
-                        type="number"
-                        autoFocus
-                        value={editingNumber.value}
-                        onChange={e => setEditingNumber({ ...editingNumber, value: e.target.value })}
-                        onBlur={() => handleUpdateNumber(c.id, editingNumber.value)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') handleUpdateNumber(c.id, editingNumber.value);
-                          if (e.key === 'Escape') setEditingNumber(null);
-                        }}
-                        className="w-20 bg-black/60 border border-olympia-red/50 rounded px-2 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-olympia-red"
-                      />
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-1">
+                        <input 
+                          type="number"
+                          autoFocus
+                          value={editingNumber.value}
+                          onChange={e => setEditingNumber({ ...editingNumber, value: e.target.value })}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') handleUpdateNumber(c.id, editingNumber.value);
+                            if (e.key === 'Escape') setEditingNumber(null);
+                          }}
+                          className="w-16 bg-black/60 border border-olympia-red/50 rounded px-2 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-olympia-red"
+                        />
+                        <button 
+                          onClick={() => handleUpdateNumber(c.id, editingNumber.value)}
+                          className="p-1 bg-green-500/20 text-green-500 rounded hover:bg-green-500/40 transition-colors"
+                          title="Confirmar"
+                        >
+                          <Check className="w-3 h-3" />
+                        </button>
+                        <button 
+                          onClick={() => setEditingNumber(null)}
+                          className="p-1 bg-red-500/20 text-red-500 rounded hover:bg-red-500/40 transition-colors"
+                          title="Cancelar"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
                       {errorStatus.id === c.id && (
                         <p className="text-[8px] text-red-500 font-bold uppercase">{errorStatus.msg}</p>
                       )}
