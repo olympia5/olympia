@@ -77,12 +77,12 @@ const MembersTab = ({ clients, updateClient, deleteClient }) => {
   const [errorStatus, setErrorStatus] = useState({ id: null, msg: '' });
 
   const filtered = clients.filter(c =>
-    `${c.name} ${c.email} ${c.surname} ${c.memberNumber}`.toLowerCase().includes(search.toLowerCase())
+    `${c.name} ${c.email} ${c.surname} ${c.member_number || c.memberNumber}`.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleUpdateNumber = async (id, newValue) => {
     if (!newValue || isNaN(newValue)) return;
-    const res = updateClient(id, { memberNumber: newValue });
+    const res = updateClient(id, { member_number: newValue });
     if (res.success) {
       setEditingNumber(null);
       setErrorStatus({ id: null, msg: '' });
@@ -138,11 +138,11 @@ const MembersTab = ({ clients, updateClient, deleteClient }) => {
                       )}
                     </div>
                   ) : (
-                    <div 
-                      onClick={() => setEditingNumber({ id: c.id, value: c.memberNumber })}
-                      className="flex items-center gap-2 cursor-pointer group/num"
-                    >
-                      <span className="text-sm font-bold text-olympia-red font-bebas tracking-widest">{c.memberNumber || '—'}</span>
+                     <div 
+                       onClick={() => setEditingNumber({ id: c.id, value: c.member_number })}
+                       className="flex items-center gap-2 cursor-pointer group/num"
+                     >
+                       <span className="text-sm font-bold text-olympia-red font-bebas tracking-widest">{c.member_number || '—'}</span>
                       <Edit3 className="w-3 h-3 text-white/10 group-hover/num:text-white/40 transition-colors" />
                     </div>
                   )}
@@ -150,7 +150,7 @@ const MembersTab = ({ clients, updateClient, deleteClient }) => {
                 <td className="px-5 py-4">
                    <div className="flex flex-col">
                       <span className="font-bold text-white text-sm">{c.name || '—'} {c.surname || ''}</span>
-                      <span className="text-[10px] text-white/20 uppercase tracking-widest">Registrado: {new Date(c.createdAt).toLocaleDateString()}</span>
+                      <span className="text-[10px] text-white/20 uppercase tracking-widest">Registrado: {new Date(c.created_at || c.createdAt).toLocaleDateString()}</span>
                    </div>
                 </td>
                 <td className="px-5 py-4 text-white/40 text-xs font-mono">{c.email}</td>
@@ -166,10 +166,10 @@ const MembersTab = ({ clients, updateClient, deleteClient }) => {
                   </span>
                 </td>
                 <td className="px-5 py-4 text-white/50 text-xs whitespace-nowrap">
-                  {c.membershipEnd ? (
+                  {(c.membership_end || c.membershipEnd) ? (
                     <div className="flex flex-col">
-                      <span>{new Date(c.membershipEnd).toLocaleDateString('es-AR')}</span>
-                      <span className="text-[9px] uppercase opacity-40">Quedan {Math.ceil((new Date(c.membershipEnd) - new Date()) / (1000 * 60 * 60 * 24))} días</span>
+                      <span>{new Date(c.membership_end || c.membershipEnd).toLocaleDateString('es-AR')}</span>
+                      <span className="text-[9px] uppercase opacity-40">Quedan {getDaysRemaining(c.membership_end || c.membershipEnd)} días</span>
                     </div>
                   ) : '—'}
                 </td>

@@ -19,7 +19,7 @@ const HomePage = () => {
 
   if (!currentPhrase) return null;
 
-  const daysLeft = getDaysRemaining(user?.membershipEnd);
+  const daysLeft = getDaysRemaining(user?.membership_end || user?.membershipEnd);
   const isActive = user?.status === 'active' && daysLeft > 0;
   const profileComplete = user?.profile?.weight && user?.profile?.goal;
 
@@ -76,7 +76,7 @@ const HomePage = () => {
                 <p className="text-xs opacity-70">
                   {daysLeft <= 3
                     ? `⚠️ Solo te quedan ${daysLeft} día${daysLeft !== 1 ? 's' : ''} — renovar pronto`
-                    : `Te quedan ${daysLeft} días — vence el ${new Date(user?.membershipEnd).toLocaleDateString('es-AR')}`
+                    : `Te quedan ${daysLeft} días — vence el ${new Date(user?.membership_end || user?.membershipEnd).toLocaleDateString('es-AR')}`
                   }
                 </p>
               </div>

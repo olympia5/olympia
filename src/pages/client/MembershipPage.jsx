@@ -7,7 +7,7 @@ const MembershipPage = () => {
   const [activating, setActivating] = useState(false);
   const [justActivated, setJustActivated] = useState(false);
 
-  const daysLeft = getDaysRemaining(user?.membershipEnd);
+  const daysLeft = getDaysRemaining(user?.membership_end || user?.membershipEnd);
   const isActive = user?.status === 'active' && daysLeft > 0;
 
   // Porcentaje de tiempo restante (de 30 días)
@@ -64,7 +64,7 @@ const MembershipPage = () => {
               <div className="text-right">
                 <p className="text-xs text-white/30 uppercase tracking-widest">Vence</p>
                 <p className="text-sm font-bold text-white mt-0.5">
-                  {new Date(user?.membershipEnd).toLocaleDateString('es-AR', { day: '2-digit', month: 'long' })}
+                  {new Date(user?.membership_end || user?.membershipEnd).toLocaleDateString('es-AR', { day: '2-digit', month: 'long' })}
                 </p>
               </div>
             )}
