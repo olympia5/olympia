@@ -267,16 +267,27 @@ const SettingsTab = ({ settings, updateSettings }) => {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = () => {
-    updateSettings(form);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    const res = await updateSettings(form);
+    if (res.success) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } else {
+      alert("Error al guardar: " + res.error);
+    }
   };
 
-  const handleSaveIdentity = () => {
-    updateSettings({ ...settings, gymName: form.gymName, gymLogo: form.gymLogo });
-    setSavedIdentity(true);
-    setTimeout(() => setSavedIdentity(false), 2000);
+  const handleSaveIdentity = async () => {
+    const res = await updateSettings({ 
+      gymName: form.gymName, 
+      gymLogo: form.gymLogo 
+    });
+    if (res.success) {
+      setSavedIdentity(true);
+      setTimeout(() => setSavedIdentity(false), 2000);
+    } else {
+      alert("Error al guardar identidad: " + res.error);
+    }
   };
 
   const updateSchedule = (i, field, value) => {

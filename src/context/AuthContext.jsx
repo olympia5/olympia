@@ -215,8 +215,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateSettings = async (newSettings) => {
-    const { error } = await supabase.from('gym_settings').update(newSettings).eq('id', 1);
-    if (!error) setSettings(prev => ({ ...prev, ...newSettings }));
+    try {
+      const { error } = await supabase
+        .from('gym_settings')
+        .update(newSettings)
+        .eq('id', 1);
+      
+      if (error) throw error;
+      
+      setSettings(prev => ({ ...prev, ...newSettings }));
+      return { success: true };
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      return { success: false, error: error.message };
+    }
   };
 
   const addDiet = async (dietData) => {
