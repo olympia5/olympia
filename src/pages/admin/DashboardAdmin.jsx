@@ -486,18 +486,45 @@ const SettingsTab = ({ settings, updateSettings }) => {
         <h3 className="text-lg font-bebas tracking-widest text-white flex items-center gap-2">
           <Clock className="w-5 h-5 text-olympia-red" /> Horarios del Gimnasio
         </h3>
-        {form.schedules.map((s, i) => (
-          <div key={i} className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-black/30 rounded-xl">
-            <input value={s.day} onChange={e => updateSchedule(i, 'day', e.target.value)}
-              className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-olympia-red"
-              placeholder="Día(s)"
-            />
-            <input value={s.hours} onChange={e => updateSchedule(i, 'hours', e.target.value)}
-              className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-olympia-red"
-              placeholder="Horario"
-            />
-          </div>
-        ))}
+        <div className="space-y-3">
+          {form.schedules && form.schedules.map((s, i) => (
+            <div key={i} className="flex gap-2">
+              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-black/30 rounded-xl relative">
+                <input 
+                  value={s.day} 
+                  onChange={e => updateSchedule(i, 'day', e.target.value)}
+                  className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-olympia-red"
+                  placeholder="Ej: Lunes a Viernes"
+                />
+                <input 
+                  value={s.hours} 
+                  onChange={e => updateSchedule(i, 'hours', e.target.value)}
+                  className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-olympia-red"
+                  placeholder="Ej: 08:00 - 22:00"
+                />
+              </div>
+              <button
+                onClick={() => {
+                  const newSchedules = form.schedules.filter((_, idx) => idx !== i);
+                  setForm({ ...form, schedules: newSchedules });
+                }}
+                className="p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-colors self-center"
+                title="Eliminar horario"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={() => setForm({ 
+              ...form, 
+              schedules: [...(form.schedules || []), { day: '', hours: '' }] 
+            })}
+            className="flex items-center gap-2 text-olympia-red text-sm font-bold mt-2 hover:text-red-400 transition-colors"
+          >
+            <Plus className="w-4 h-4" /> Cargar Nuevo Horario
+          </button>
+        </div>
       </div>
 
       {/* Save button */}
