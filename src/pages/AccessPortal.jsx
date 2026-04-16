@@ -36,7 +36,7 @@ const AccessPortal = () => {
     e.preventDefault();
     setError('');
     setSubmitting(true);
-    const result = loginWithEmail(email.trim(), password);
+    const result = await loginWithEmail(email.trim(), password);
     setSubmitting(false);
     if (result.success) {
       navigate(result.role === 'admin' ? '/admin' : '/cliente');
@@ -54,7 +54,7 @@ const AccessPortal = () => {
       return;
     }
     setSubmitting(true);
-    const result = registerClient(email.trim(), password);
+    const result = await registerClient(email.trim(), password);
     setSubmitting(false);
     if (result.success) {
       navigate('/cliente');
