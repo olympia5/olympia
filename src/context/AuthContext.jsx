@@ -2,6 +2,13 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { DIET_TEMPLATES, ROUTINE_TEMPLATES, processDietText } from '../lib/plansLibrary';
 
+// ---- Helper: calcular días restantes ----
+export const getDaysRemaining = (membershipEnd) => {
+  if (!membershipEnd) return 0;
+  const diff = Math.ceil((new Date(membershipEnd) - new Date()) / (1000 * 60 * 60 * 24));
+  return Math.max(0, diff);
+};
+
 const AuthContext = createContext(null);
 
 // ---- Frases motivacionales iniciales (fallback) ----
