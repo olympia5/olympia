@@ -228,18 +228,19 @@ export const AuthProvider = ({ children }) => {
     // Estos campos podrían no existir todavía, los mandamos con cuidado
     // Si fallan, reintaremos solo con los básicos
     const extendedData = {
+      client_id: user.id, // Aseguramos que el ID esté presente para upsert
       ...dbData,
       sex: profileData.sex,
       diet_preference: profileData.dietPreference,
       avatar: profileData.avatar
     };
 
-    console.log("Intentando guardar perfil:", extendedData);
+    console.log("Intentando upsert de perfil:", extendedData);
 
+    // USAMOS UPSERT: Si no existe, lo crea. Si existe, lo actualiza.
     const { error: firstError } = await supabase
       .from('client_profiles')
-      .update(extendedData)
-      .eq('client_id', user.id);
+      .upsert(extendedData, { onConflict: 'client_id' });
     
     let finalError = firstError;
 
@@ -248,8 +249,10 @@ export const AuthProvider = ({ children }) => {
       console.warn("Fallo guardado extendido, reintentando con campos básicos...", firstError.message);
       const { error: secondError } = await supabase
         .from('client_profiles')
-        .update(dbData)
-        .eq('client_id', user.id);
+        .upsert({ 
+          client_id: user.id,
+          ...dbData 
+        }, { onConflict: 'client_id' });
       finalError = secondError;
     }
     
