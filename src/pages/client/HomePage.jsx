@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Activity, ChevronRight, Swords, User, AlertTriangle, Timer, Camera, X, DoorOpen, CheckCircle2, Scan, TrendingUp, Scale, Plus } from 'lucide-react';
+import { Activity, ChevronRight, Swords, User, AlertTriangle, Timer, Camera, X, DoorOpen, CheckCircle2, Scan, TrendingUp, Scale, Plus, BarChart3 } from 'lucide-react';
 import { useAuth, getDaysRemaining } from '../../context/AuthContext';
 
 
@@ -139,6 +139,16 @@ const HomePage = () => {
             {currentPhrase.split(' ').slice(-1)[0].toUpperCase()}
           </h2>
 
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <NavLink 
+              to="/cliente/progreso"
+              className="flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-bold uppercase tracking-widest hover:bg-white/10 transition-all group"
+            >
+              <BarChart3 className="w-5 h-5 text-olympia-red group-hover:scale-110 transition-transform" />
+              Ver Rendimiento Gráfico
+            </NavLink>
+          </div>
+
           {/* Profile summary if complete */}
           {profileComplete && (
             <div className="flex flex-wrap justify-center gap-3 mb-8">
@@ -186,10 +196,10 @@ const HomePage = () => {
               </NavLink>
             </div>
 
-            {history.length < 2 ? (
+            {history.length < 1 ? (
               <div className="p-12 border-2 border-dashed border-white/5 rounded-3xl text-center">
                 <Scale className="w-12 h-12 text-white/10 mx-auto mb-4" />
-                <p className="text-white/40 text-sm">Necesitás al menos dos registros para ver el gráfico. Actualizá tu peso en el perfil periódicamente para ver tu progreso.</p>
+                <p className="text-white/40 text-sm">Cargá tu peso en el perfil para ver tu progreso.</p>
               </div>
             ) : (
               <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-10">
@@ -202,12 +212,13 @@ const HomePage = () => {
                     
                     {/* Points & Lines */}
                     {(() => {
-                      const maxW = Math.max(...history.map(h => Number(h.weight_kg))) * 1.05;
-                      const minW = Math.min(...history.map(h => Number(h.weight_kg))) * 0.95;
+                      const weights = history.map(h => Number(h.weight_kg));
+                      const maxW = Math.max(...weights) * 1.05;
+                      const minW = Math.min(...weights) * 0.95;
                       const range = maxW - minW || 1;
                       
                       const points = history.map((h, i) => {
-                        const x = (i / (history.length - 1)) * 100;
+                        const x = history.length > 1 ? (i / (history.length - 1)) * 100 : 50;
                         const y = 100 - ((Number(h.weight_kg) - minW) / range) * 100;
                         return `${x},${y}`;
                       }).join(' ');

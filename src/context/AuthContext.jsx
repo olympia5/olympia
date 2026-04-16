@@ -284,6 +284,32 @@ export const AuthProvider = ({ children }) => {
     return error ? [] : data;
   };
 
+  const logPerformance = async (exerciseData) => {
+    if (!user) return { success: false, error: 'No user logged in' };
+    
+    // El objeto incluye: exercise_name, weight_kg, reps, sets
+    const { error } = await supabase
+      .from('exercise_logs')
+      .insert({
+        client_id: user.id,
+        ...exerciseData,
+        date: new Date().toISOString().split('T')[0]
+      });
+
+    return { success: !error, error: error?.message };
+  };
+
+  const getPerformanceLogs = async () => {
+    if (!user) return [];
+    const { data, error } = await supabase
+      .from('exercise_logs')
+      .select('*')
+      .eq('client_id', user.id)
+      .order('date', { ascending: true });
+    
+    return error ? [] : data;
+  };
+
   const activateMembership = async () => {
     if (!user) return;
     const now = new Date();

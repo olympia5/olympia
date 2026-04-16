@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Save, Check, User, Weight, Ruler, Calendar, Target, UploadCloud, Camera, AlertTriangle } from 'lucide-react';
+import { Save, Check, User, Weight, Ruler, Calendar, Target, UploadCloud, Camera, AlertTriangle, BarChart3 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, NavLink } from 'react-router-dom';
 
 const GOALS = [
   { value: 'perder_peso', label: 'Perder Peso', icon: '🔥', desc: 'Quema de grasa y definición' },
@@ -86,9 +86,19 @@ const ProfilePage = () => {
               </div>
             </div>
             
-            <h1 className="text-5xl font-bebas text-white tracking-widest">
-              Mi Perfil
-            </h1>
+            <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <h1 className="text-5xl font-bebas text-white tracking-widest leading-none">
+                Mi Perfil
+              </h1>
+              
+              <NavLink 
+                to="/cliente/progreso"
+                className="flex items-center gap-2 px-4 py-2 bg-olympia-red/10 border border-olympia-red/30 rounded-xl text-olympia-red text-[10px] font-bold uppercase tracking-widest hover:bg-olympia-red/20 transition-all group"
+              >
+                <BarChart3 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                Ver Rendimiento Gráfico
+              </NavLink>
+            </div>
           </div>
           <p className="text-xs text-white/30 uppercase tracking-[0.3em] mt-2">
             {user?.email} — Completá tus datos físicos para personalizar tu experiencia

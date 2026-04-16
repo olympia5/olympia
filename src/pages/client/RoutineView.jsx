@@ -181,6 +181,52 @@ const RoutineView = () => {
                         <span className="text-2xl font-bebas text-white">{ex.reps || '-'}</span>
                       </div>
                     </div>
+
+                    {/* --- LOG FORM --- */}
+                    {activeExercise === ex.id && (
+                      <div className="mt-6 p-4 bg-olympia-red/5 border border-olympia-red/20 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex flex-col sm:flex-row items-end gap-3">
+                          <div className="flex-1 space-y-2">
+                            <label className="text-[10px] text-olympia-red font-bold uppercase tracking-widest ml-1">Kilos cargados hoy</label>
+                            <input 
+                              type="number" 
+                              placeholder="Ej: 60"
+                              value={logForm.weight}
+                              onChange={(e) => setLogForm(f => ({ ...f, weight: e.target.value }))}
+                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-olympia-red transition-all"
+                            />
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <label className="text-[10px] text-olympia-red font-bold uppercase tracking-widest ml-1">Repeticiones reales</label>
+                            <input 
+                              type="number" 
+                              placeholder={`Ej: ${ex.reps?.split('-')[0] || 12}`}
+                              value={logForm.reps}
+                              onChange={(e) => setLogForm(f => ({ ...f, reps: e.target.value }))}
+                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-olympia-red transition-all"
+                            />
+                          </div>
+                          <button 
+                            disabled={!logForm.weight || !logForm.reps || isSaving}
+                            onClick={async () => {
+                              setIsSaving(true);
+                              await logPerformance({
+                                exercise_name: ex.name,
+                                weight_kg: Number(logForm.weight),
+                                reps: Number(logForm.reps),
+                                sets: Number(ex.series || 4)
+                              });
+                              setIsSaving(false);
+                              setActiveExercise(null);
+                              setLogForm({ weight: '', reps: '' });
+                            }}
+                            className="bg-olympia-red hover:bg-red-700 disabled:opacity-30 text-white font-bold h-[50px] px-6 rounded-xl uppercase tracking-widest text-[10px] transition-all"
+                          >
+                            {isSaving ? 'Guardando...' : 'Guardar Récord'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-3 mt-6">
@@ -190,9 +236,16 @@ const RoutineView = () => {
                           ? 'bg-olympia-red/80 text-white border-olympia-red shadow-[0_0_15px_rgba(220,38,38,0.3)]' 
                           : 'bg-white/5 border-white/10 text-white/60 hover:text-white hover:border-white/30'
                       }`}
-                      onClick={() => setActiveExercise(ex.id)}
+                      onClick={() => {
+                        if (activeExercise === ex.id) {
+                          setActiveExercise(null);
+                        } else {
+                          setActiveExercise(ex.id);
+                          setLogForm({ weight: '', reps: '' });
+                        }
+                      }}
                     >
-                      {activeExercise === ex.id ? 'Socio Completo ✓' : 'Completar Series'}
+                      {activeExercise === ex.id ? 'Cancelar Carga' : 'Cargar Peso / Completar'}
                     </button>
                     <button className="px-5 py-4 bg-white/5 text-white/30 border border-white/10 rounded-xl hover:text-olympia-red transition-all transition-colors flex items-center justify-center">
                       <Video className="w-5 h-5" />
