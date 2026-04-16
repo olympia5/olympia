@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, Check, User, Weight, Ruler, Calendar, Target, UploadCloud, Camera } from 'lucide-react';
+import { Save, Check, User, Weight, Ruler, Calendar, Target, UploadCloud, Camera, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -38,19 +38,33 @@ const ProfilePage = () => {
     }
   };
 
-  const isComplete = form.weight && form.sex && form.height && form.age && form.goal && form.dietPreference;
-
-  const handleSave = (e) => {
-    e.preventDefault();
-    updateProfile(form);
-    setSaved(true);
-    setTimeout(() => {
-      setSaved(false);
-      navigate('/cliente');
-    }, 1500);
-  };
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const inputClass = "w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-olympia-red focus:ring-1 focus:ring-olympia-red/40 transition-all text-sm";
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await updateProfile(form);
+      if (res.success) {
+        setSaved(true);
+        setTimeout(() => {
+          setSaved(false);
+          navigate('/cliente');
+        }, 1500);
+      } else {
+        setError(res.error || 'Ocurrió un error al guardar');
+      }
+    } catch (err) {
+      setError('Error de conexión');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen pt-8 px-4 md:px-8 lg:px-16 pb-16">
@@ -222,24 +236,38 @@ const ProfilePage = () => {
             </div>
           )}
 
+          {/* Error alert */}
+          {error && (
+            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-400">
+              <AlertTriangle className="w-5 h-5 shrink-0" />
+              <p className="text-xs font-bold uppercase tracking-widest">{error}</p>
+            </div>
+          )}
+
           {/* Save button */}
           <button
             type="submit"
-            disabled={!isComplete || saved}
+            disabled={loading || saved}
             className={`w-full py-4 rounded-xl font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-300 ${
               saved
                 ? 'bg-green-600 text-white shadow-[0_0_15px_rgba(22,163,74,0.4)]'
-                : isComplete
-                  ? 'btn-spartan'
-                  : 'bg-white/5 text-white/20 cursor-not-allowed'
+                : loading
+                  ? 'bg-white/5 text-white/40 cursor-wait'
+                  : 'btn-spartan'
             }`}
           >
-            {saved ? <><Check className="w-4 h-4" /> Guardado!</> : <><Save className="w-4 h-4" /> Guardar perfil</>}
+            {saved ? (
+              <><Check className="w-4 h-4" /> Guardado!</>
+            ) : loading ? (
+              <><div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> Guardando...</>
+            ) : (
+              <><Save className="w-4 h-4" /> Guardar perfil</>
+            )}
           </button>
 
-          {!isComplete && (
-            <p className="text-center text-xs text-white/25 uppercase tracking-widest">
-              Completá todos los campos para guardar
+          {!saved && !loading && (
+            <p className="text-center text-[10px] text-white/20 uppercase tracking-[0.2em]">
+              Se generará un registro histórico de tu evolución hoy
             </p>
           )}
         </form>
