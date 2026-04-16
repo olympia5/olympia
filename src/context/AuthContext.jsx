@@ -229,12 +229,16 @@ export const AuthProvider = ({ children }) => {
       })
       .eq('id', user.id);
 
-    if (!error) {
-      // Intentar actualizar el perfil también si no existe
-      await supabase.from('client_profiles').upsert({ client_id: user.id });
-      fetchUserData(user);
+    if (error) {
+      console.error("Error activating membership:", error);
+      return { success: false, error: error.message };
     }
-    return { success: !error, membershipEnd: end.toISOString() };
+
+    // Intentar actualizar el perfil también si no existe
+    await supabase.from('client_profiles').upsert({ client_id: user.id });
+    fetchUserData(user);
+    
+    return { success: true, membershipEnd: end.toISOString() };
   };
 
   // ---- 6. ACCIONES ADMIN ----
