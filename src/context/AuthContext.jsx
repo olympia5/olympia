@@ -157,7 +157,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const fetchAllData = async () => {
-    const { data: allClients } = await supabase.from('clients').select('*, client_profiles(*)');
+    const { data: allClients } = await supabase
+      .from('clients')
+      .select('*, client_profiles(*)')
+      .order('created_at', { ascending: true });
+    
     if (allClients) setClients(allClients);
     fetchPublicData();
   };

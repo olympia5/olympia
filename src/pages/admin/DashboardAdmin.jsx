@@ -81,8 +81,11 @@ const MembersTab = ({ clients, updateClient, deleteClient }) => {
   );
 
   const handleUpdateNumber = async (id, newValue) => {
-    if (!newValue || isNaN(newValue)) return;
-    const res = updateClient(id, { member_number: newValue });
+    // Permitir 0 o vacío, solo retornar si es undefined o NaN (no numérico)
+    if (newValue === undefined || newValue === null || (newValue !== '' && isNaN(newValue))) return;
+    
+    // Convertir a string para la base de datos
+    const res = await updateClient(id, { member_number: newValue.toString() });
     if (res.success) {
       setEditingNumber(null);
       setErrorStatus({ id: null, msg: '' });
