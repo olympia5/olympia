@@ -5,7 +5,7 @@ import {
   DoorOpen, Instagram, Phone, Link2, Clock,
   Plus, Check, X, Eye, EyeOff, AlertTriangle, Quote, UploadCloud
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, getDaysRemaining } from '../../context/AuthContext';
 
 // ========================
 // Subcomponente de tab activo
