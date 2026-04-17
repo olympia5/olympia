@@ -52,7 +52,7 @@ const RoutinesAdmin = () => {
   };
 
   const addExercise = (day) => {
-    const newExercise = { id: Date.now(), name: '', series: '', reps: '', rest: '' };
+    const newExercise = { id: Date.now(), name: '', muscle: '', series: '', reps: '', rest: '' };
     setForm({
       ...form,
       days: {
@@ -185,7 +185,7 @@ const RoutinesAdmin = () => {
                 <div className="space-y-3">
                   {form.days[activeDay].map((ex, idx) => (
                     <div key={ex.id} className="grid grid-cols-12 gap-2 items-end bg-white/5 p-3 rounded-lg border border-white/5 group">
-                      <div className="col-span-12 md:col-span-4">
+                      <div className="col-span-12 md:col-span-3">
                         <label className="text-[10px] text-white/30 uppercase block mb-1">Nombre</label>
                         <input 
                           value={ex.name} 
@@ -194,7 +194,16 @@ const RoutinesAdmin = () => {
                           placeholder="Ej: Press de Banca"
                         />
                       </div>
-                      <div className="col-span-3 md:col-span-2">
+                      <div className="col-span-12 md:col-span-2">
+                        <label className="text-[10px] text-white/30 uppercase block mb-1">Músculo</label>
+                        <input 
+                          value={ex.muscle} 
+                          onChange={(e) => updateExercise(activeDay, ex.id, 'muscle', e.target.value)}
+                          className="w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-xs text-white" 
+                          placeholder="Ej: Pecho"
+                        />
+                      </div>
+                      <div className="col-span-3 md:col-span-1">
                         <label className="text-[10px] text-white/30 uppercase block mb-1">Series</label>
                         <input 
                           value={ex.series} 

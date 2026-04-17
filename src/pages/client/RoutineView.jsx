@@ -163,7 +163,14 @@ const RoutineView = () => {
                         <div className="w-12 h-12 rounded-xl bg-olympia-red/10 border border-olympia-red/20 flex items-center justify-center text-olympia-red">
                           <Dumbbell className="w-6 h-6" />
                         </div>
-                        <h3 className="text-3xl font-bebas text-white tracking-widest">{ex.name}</h3>
+                        <div className="flex flex-col">
+                          <h3 className="text-3xl font-bebas text-white tracking-widest leading-none">{ex.name}</h3>
+                          {ex.muscle && (
+                            <span className="text-[10px] text-olympia-red font-bold uppercase tracking-widest mt-1">
+                              {ex.muscle}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="bg-olympia-red/10 text-olympia-red text-[10px] font-bold px-3 py-1.5 rounded-lg border border-olympia-red/20 uppercase tracking-widest">
                         {ex.rest || '-'} Descanso
