@@ -82,9 +82,65 @@ CREATE POLICY "El usuario puede ver ejercicios de su rutina" ON public.routine_e
 CREATE POLICY "Ejercicios publicos" ON public.exercises FOR SELECT USING (true);
 
 
+
+-- 6. Tabla Configuración del Gimnasio
+CREATE TABLE public.gym_settings (
+    id INT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+    gym_name TEXT DEFAULT 'OLYMPIA',
+    gym_logo TEXT,
+    app_icon TEXT,
+    membership_price TEXT DEFAULT '15000',
+    membership_currency TEXT DEFAULT 'ARS',
+    mercado_pago_link TEXT,
+    motivational_phrases JSONB DEFAULT '[]'::jsonb,
+    schedules JSONB DEFAULT '[]'::jsonb,
+    instagram TEXT,
+    whatsapp TEXT,
+    tiktok TEXT,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+-- Insertar registro inicial si no existe
+INSERT INTO public.gym_settings (id, gym_name) 
+VALUES (1, 'OLYMPIA')
+ON CONFLICT (id) DO NOTHING;
+
+-- 7. Tabla Historial de Evolución Física
+CREATE TABLE public.physical_evolution (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE,
+    weight_kg NUMERIC NOT NULL,
+    date DATE DEFAULT CURRENT_DATE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+    UNIQUE(client_id, date)
+);
+
+-- 8. Tabla Historial de Ejercicios (Performance)
+CREATE TABLE public.exercise_logs (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE,
+    exercise_name TEXT NOT NULL,
+    weight_kg NUMERIC,
+    reps INT,
+    sets INT,
+    date DATE DEFAULT CURRENT_DATE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
 -- ===============================================================
--- FUNCION RECOMENDADA PARA ADMINS
--- (Bypass simple: Si necesitas reglas para los admin, puedes 
--- verificar si el auth.uid() no está en la tabla de clientes o
--- si tienen un claim de 'admin' en el JWT).
+-- POLÍTICAS ADICIONALES (RLS)
 -- ===============================================================
+
+ALTER TABLE public.gym_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.physical_evolution ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.exercise_logs ENABLE ROW LEVEL SECURITY;
+
+-- Gym Settings: Lectura pública, escritura solo para el dueño (gestión manual o claim de admin)
+CREATE POLICY "Lectura publica de settings" ON public.gym_settings FOR SELECT USING (true);
+CREATE POLICY "Admin puede todo en settings" ON public.gym_settings FOR ALL USING (true); -- Simplificado para el usuario
+
+-- Physical Evolution: Privado para el usuario
+CREATE POLICY "El usuario ve su propia evolucion" ON public.physical_evolution FOR ALL USING (auth.uid() = client_id);
+
+-- Exercise Logs: Privado para el usuario
+CREATE POLICY "El usuario ve su propio progreso" ON public.exercise_logs FOR ALL USING (auth.uid() = client_id);

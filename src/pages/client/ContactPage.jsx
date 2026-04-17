@@ -88,7 +88,7 @@ const ContactPage = () => {
         {/* Info box */}
         <div className="mt-8 p-5 bg-white/5 border border-white/10 rounded-2xl text-center">
           <p className="text-sm text-white/50">
-            🏛️ Seguinos en redes sociales para ver rutinas, consejos de entrenamiento y novedades del coliseo.
+            Seguinos en redes sociales para ver rutinas, consejos de entrenamiento y novedades del coliseo.
           </p>
         </div>
       </div>

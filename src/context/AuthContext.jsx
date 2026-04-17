@@ -104,61 +104,83 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // ---- 1.1 Inyección Dinámica de Iconos (PWA) ----
+  // ---- 1.1 Inyección Dinámica de Iconos y Meta (PWA) ----
   useEffect(() => {
-    if (settings.appIcon) {
-      // 1. Actualizar Favicon y Apple Touch Icon
-      const updateLink = (rel, href) => {
-        let link = document.querySelector(`link[rel="${rel}"]`);
-        if (!link) {
-          link = document.createElement('link');
-          link.rel = rel;
-          document.head.appendChild(link);
-        }
-        link.href = href;
-      };
+    const iconToUse = settings.appIcon || '/favicon.png';
+    const gymTitle = settings.gymName || "Gimnasio Olympia";
 
-      updateLink('icon', settings.appIcon);
-      updateLink('apple-touch-icon', settings.appIcon);
-
-      // 2. Generar Manifiesto Dinámico (Data URL)
-      const manifest = {
-        name: settings.gymName || "Gimnasio Olympia",
-        short_name: settings.gymName || "Olympia",
-        start_url: "/cliente",
-        display: "standalone",
-        background_color: "#000000",
-        theme_color: "#000000",
-        icons: [
-          {
-            src: settings.appIcon,
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "any"
-          },
-          {
-            src: settings.appIcon,
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable any"
-          }
-        ]
-      };
-      
-      const stringManifest = JSON.stringify(manifest);
-      const blob = new Blob([stringManifest], { type: 'application/json' });
-      const manifestURL = URL.createObjectURL(blob);
-      
-      let manifestLink = document.querySelector('link[rel="manifest"]');
-      if (!manifestLink) {
-        manifestLink = document.createElement('link');
-        manifestLink.rel = 'manifest';
-        document.head.appendChild(manifestLink);
+    // 1. Actualizar Favicon y Apple Touch Icon
+    const updateLink = (rel, href) => {
+      let link = document.querySelector(`link[rel="${rel}"]`);
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = rel;
+        document.head.appendChild(link);
       }
-      manifestLink.href = manifestURL;
+      link.href = href;
+    };
 
-      return () => URL.revokeObjectURL(manifestURL);
+    // Actualizar tags de iconos
+    updateLink('icon', iconToUse);
+    updateLink('apple-touch-icon', iconToUse);
+    updateLink('shortcut icon', iconToUse);
+
+    // 2. Actualizar Meta Tags de PWA (Capable y Títulos)
+    const updateMeta = (name, content) => {
+      let meta = document.querySelector(`meta[name="${name}"]`);
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.name = name;
+        document.head.appendChild(meta);
+      }
+      meta.content = content;
+    };
+
+    updateMeta('apple-mobile-web-app-title', gymTitle);
+    updateMeta('application-name', gymTitle);
+    updateMeta('mobile-web-app-capable', 'yes');
+    updateMeta('apple-mobile-web-app-capable', 'yes');
+
+    // 3. Generar Manifiesto Dinámico (Data URL) con Versionado
+    const version = Date.now();
+    const manifest = {
+      name: gymTitle,
+      short_name: gymTitle.split(' ')[0],
+      start_url: `/cliente?v=${version}`,
+      display: "standalone",
+      background_color: "#000000",
+      theme_color: "#000000",
+      icons: [
+        {
+          src: `${iconToUse}${iconToUse.includes('data:') ? '' : `?v=${version}`}`,
+          sizes: "192x192",
+          type: "image/png",
+          purpose: "any"
+        },
+        {
+          src: `${iconToUse}${iconToUse.includes('data:') ? '' : `?v=${version}`}`,
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "maskable any"
+        }
+      ]
+    };
+    
+    const stringManifest = JSON.stringify(manifest);
+    const blob = new Blob([stringManifest], { type: 'application/json' });
+    const manifestURL = URL.createObjectURL(blob);
+    
+    let manifestLink = document.querySelector('link[rel="manifest"]');
+    if (!manifestLink) {
+      manifestLink = document.createElement('link');
+      manifestLink.rel = 'manifest';
+      document.head.appendChild(manifestLink);
     }
+    manifestLink.href = manifestURL;
+
+    return () => {
+      URL.revokeObjectURL(manifestURL);
+    };
   }, [settings.appIcon, settings.gymName]);
 
   // ---- 2. Obtener datos extra del usuario (rol, nombre, perfil) ----
