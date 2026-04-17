@@ -87,13 +87,26 @@ const ClientLayout = () => {
               </button>
             </div>
 
-            {/* Mobile hamburger */}
-            <button
-              className="md:hidden text-white p-1"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            {/* Mobile Actions */}
+            <div className="md:hidden flex items-center gap-3">
+              <NavLink to="/cliente/perfil" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <div className="w-7 h-7 rounded-full bg-white/95 p-0.5 border border-white/20 flex items-center justify-center overflow-hidden shadow-[0_0_10px_rgba(255,255,255,0.1)]">
+                  {settings?.gymLogo ? (
+                    <img src={settings.gymLogo} alt="Avatar" className="w-full h-full object-contain" />
+                  ) : (
+                    <span className="text-[10px] text-black font-bold">O</span>
+                  )}
+                </div>
+                <span className="text-[10px] font-bold text-white/50 uppercase tracking-[0.15em]">{user?.name?.split(' ')[0] || 'Socio'}</span>
+              </NavLink>
+
+              <button
+                className="text-white p-1 hover:bg-white/5 rounded-lg transition-colors"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
         </div>
 
