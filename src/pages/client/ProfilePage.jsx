@@ -232,7 +232,7 @@ const ProfilePage = () => {
           {/* IMC Preview */}
           {form.weight && form.height && (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-              <p className="text-xs text-white uppercase tracking-widest mb-1 font-bold">✅ Tu IMC (Índice de Masa Corporal) estimado</p>
+              <p className="text-xs text-white uppercase tracking-widest mb-1 font-bold">Tu IMC (Índice de Masa Corporal) estimado</p>
               {(() => {
                 const imc = (Number(form.weight) / Math.pow(Number(form.height) / 100, 2)).toFixed(1);
                 const cat = imc < 18.5 ? 'Bajo peso' : imc < 25 ? 'Normal ✓' : imc < 30 ? 'Sobrepeso' : 'Obesidad';
