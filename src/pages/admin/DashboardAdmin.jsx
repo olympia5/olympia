@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Users, Settings, Image, Key, BarChart3,
+  Users, Settings, Image as ImageIcon, Key, BarChart3,
   UserCheck, UserX, Trash2, Save, Edit3,
   DoorOpen, Instagram, Phone, Link2, Clock,
   Plus, Check, X, Eye, EyeOff, AlertTriangle, Quote, UploadCloud, Award
@@ -354,10 +354,10 @@ const SettingsTab = ({ settings, updateSettings }) => {
     }
   };
 
-  const handleFile = (file) => {
+  const handleFile = (file, field) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      setForm({ ...form, gymLogo: e.target.result });
+      setForm(prev => ({ ...prev, [field]: e.target.result }));
     };
     reader.readAsDataURL(file);
   };
@@ -375,7 +375,8 @@ const SettingsTab = ({ settings, updateSettings }) => {
   const handleSaveIdentity = async () => {
     const res = await updateSettings({ 
       gymName: form.gymName, 
-      gymLogo: form.gymLogo 
+      gymLogo: form.gymLogo,
+      appIcon: form.appIcon
     });
     if (res.success) {
       setSavedIdentity(true);
@@ -390,14 +391,18 @@ const SettingsTab = ({ settings, updateSettings }) => {
     setForm({ ...form, schedules: updated });
   };
 
+  console.log("SettingsTab rendering. Settings:", settings);
+
   return (
     <div className="space-y-6 max-w-2xl">
       {/* Identidad */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
         <h3 className="text-lg font-bebas tracking-widest text-white flex items-center gap-2">
-          <Image className="w-5 h-5 text-olympia-red" /> Identidad del Gimnasio
+          <ImageIcon className="w-5 h-5 text-olympia-red" /> Identidad del Gimnasio
         </h3>
         <div className="grid grid-cols-1 gap-4">
+          
+          {/* 1. Nombre del Gimnasio */}
           <div>
             <label className="text-xs text-white/40 uppercase tracking-widest mb-1 block">Nombre del Gimnasio</label>
             <input
@@ -407,23 +412,31 @@ const SettingsTab = ({ settings, updateSettings }) => {
               placeholder="OLYMPIA"
             />
           </div>
+
+          {/* 2. Logo del Gimnasio (Opcional) */}
           <div>
             <label className="text-xs text-white/40 uppercase tracking-widest mb-1 block">Logo del Gimnasio (Opcional)</label>
             <div
               className={`relative flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition-all overflow-hidden ${
-                dragActive
+                dragActive === 'gymLogo'
                   ? 'border-olympia-red bg-olympia-red/10'
                   : 'border-white/20 bg-black/40 hover:border-white/40 hover:bg-white/5'
               } ${form.gymLogo ? 'min-h-[160px]' : ''}`}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
+              onDragEnter={(e) => { e.preventDefault(); setDragActive('gymLogo'); }}
+              onDragLeave={() => setDragActive(null)}
+              onDragOver={(e) => { e.preventDefault(); setDragActive('gymLogo'); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragActive(null);
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0], 'gymLogo');
+              }}
             >
               <input
                 type="file"
                 accept="image/*"
-                onChange={handleChange}
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) handleFile(e.target.files[0], 'gymLogo');
+                }}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />
               
@@ -438,9 +451,9 @@ const SettingsTab = ({ settings, updateSettings }) => {
                 </div>
               ) : (
                 <div className="text-center pointer-events-none">
-                  <UploadCloud className={`w-8 h-8 mx-auto mb-2 transition-colors ${dragActive ? 'text-olympia-red' : 'text-white/30'}`} />
-                  <p className="text-sm text-white/70 font-bold">Arrastrá y soltá una imagen acá</p>
-                  <p className="text-xs text-white/40 mt-1">O hacé click para seleccionar un archivo</p>
+                  <UploadCloud className={`w-8 h-8 mx-auto mb-2 transition-colors ${dragActive === 'gymLogo' ? 'text-olympia-red' : 'text-white/30'}`} />
+                  <p className="text-sm text-white/70 font-bold tracking-widest uppercase">Logo del Gimnasio</p>
+                  <p className="text-[10px] text-white/40 mt-1">Arrastrá una imagen o hacé click</p>
                 </div>
               )}
             </div>
@@ -454,7 +467,63 @@ const SettingsTab = ({ settings, updateSettings }) => {
               </button>
             )}
           </div>
+
+          {/* 3. Icono de la App (PWA) */}
           <div>
+            <label className="text-xs text-white/40 uppercase tracking-widest mb-1 block">Icono de la App (Para Instalación en Celular)</label>
+            <div
+              className={`relative flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition-all overflow-hidden ${
+                dragActive === 'appIcon'
+                  ? 'border-olympia-red bg-olympia-red/10'
+                  : 'border-white/20 bg-black/40 hover:border-white/40 hover:bg-white/5'
+              } ${form.appIcon ? 'min-h-[160px]' : ''}`}
+              onDragEnter={(e) => { e.preventDefault(); setDragActive('appIcon'); }}
+              onDragLeave={() => setDragActive(null)}
+              onDragOver={(e) => { e.preventDefault(); setDragActive('appIcon'); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragActive(null);
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0], 'appIcon');
+              }}
+            >
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) handleFile(e.target.files[0], 'appIcon');
+                }}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              />
+              
+              {form.appIcon ? (
+                <div className="absolute inset-0 w-full h-full pointer-events-none p-4 flex items-center justify-center bg-black/40">
+                  <img src={form.appIcon} alt="Icono Previsto" className="max-h-full max-w-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black/60 transition-opacity">
+                    <p className="text-white text-xs uppercase font-bold tracking-widest flex items-center gap-2">
+                      <UploadCloud className="w-5 h-5" /> Cambiar Icono
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center pointer-events-none">
+                  <UploadCloud className={`w-8 h-8 mx-auto mb-2 transition-colors ${dragActive === 'appIcon' ? 'text-olympia-red' : 'text-white/30'}`} />
+                  <p className="text-sm text-white/70 font-bold tracking-widest uppercase">Icono de la App (PWA)</p>
+                  <p className="text-[10px] text-white/40 mt-1">Este es el icono que verán los socios en su celular</p>
+                </div>
+              )}
+            </div>
+            {form.appIcon && (
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, appIcon: '' })}
+                className="text-[10px] text-red-500 hover:text-red-400 uppercase tracking-widest mt-2 block"
+              >
+                Quitar Icono
+              </button>
+            )}
+          </div>
+
+          <div className="mt-2">
             <button
               onClick={handleSaveIdentity}
               className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold uppercase tracking-widest transition-all w-full sm:w-auto ${
@@ -469,6 +538,7 @@ const SettingsTab = ({ settings, updateSettings }) => {
           </div>
         </div>
       </div>
+
       {/* Membresía */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
         <h3 className="text-lg font-bebas tracking-widest text-white flex items-center gap-2">
@@ -505,7 +575,7 @@ const SettingsTab = ({ settings, updateSettings }) => {
         </div>
       </div>
 
-      {/* Redes sociales */}
+      {/* Frases */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
         <h3 className="text-lg font-bebas tracking-widest text-white flex items-center gap-2">
           <Quote className="w-5 h-5 text-olympia-red" /> Frases Motivacionales
@@ -577,13 +647,13 @@ const SettingsTab = ({ settings, updateSettings }) => {
               <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-black/30 rounded-xl relative">
                 <input 
                   value={s.day} 
-                  onChange={e => updateSchedule(i, 'day', e.target.value)}
+                  onChange={updateSchedule ? (e => updateSchedule(i, 'day', e.target.value)) : undefined}
                   className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-olympia-red"
                   placeholder="Ej: Lunes a Viernes"
                 />
                 <input 
                   value={s.hours} 
-                  onChange={e => updateSchedule(i, 'hours', e.target.value)}
+                  onChange={updateSchedule ? (e => updateSchedule(i, 'hours', e.target.value)) : undefined}
                   className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-olympia-red"
                   placeholder="Ej: 08:00 - 22:00"
                 />

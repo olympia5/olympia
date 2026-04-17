@@ -22,6 +22,7 @@ const mapSettingsToDB = (js) => {
   if (js.instagram !== undefined) db.instagram = js.instagram;
   if (js.whatsapp !== undefined) db.whatsapp = js.whatsapp;
   if (js.tiktok !== undefined) db.tiktok = js.tiktok;
+  if (js.appIcon !== undefined) db.app_icon = js.appIcon;
   return db;
 };
 
@@ -35,7 +36,8 @@ const mapSettingsFromDB = (db) => ({
   schedules: db.schedules,
   instagram: db.instagram,
   whatsapp: db.whatsapp,
-  tiktok: db.tiktok
+  tiktok: db.tiktok,
+  appIcon: db.app_icon
 });
 
 const AuthContext = createContext(null);
@@ -68,7 +70,8 @@ export const AuthProvider = ({ children }) => {
     ],
     instagram: '',
     whatsapp: '',
-    tiktok: ''
+    tiktok: '',
+    appIcon: ''
   });
   const [clients, setClients] = useState([]);
   const [diets, setDiets] = useState([]);
@@ -100,6 +103,63 @@ export const AuthProvider = ({ children }) => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // ---- 1.1 Inyección Dinámica de Iconos (PWA) ----
+  useEffect(() => {
+    if (settings.appIcon) {
+      // 1. Actualizar Favicon y Apple Touch Icon
+      const updateLink = (rel, href) => {
+        let link = document.querySelector(`link[rel="${rel}"]`);
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = rel;
+          document.head.appendChild(link);
+        }
+        link.href = href;
+      };
+
+      updateLink('icon', settings.appIcon);
+      updateLink('apple-touch-icon', settings.appIcon);
+
+      // 2. Generar Manifiesto Dinámico (Data URL)
+      const manifest = {
+        name: settings.gymName || "Gimnasio Olympia",
+        short_name: settings.gymName || "Olympia",
+        start_url: "/cliente",
+        display: "standalone",
+        background_color: "#000000",
+        theme_color: "#000000",
+        icons: [
+          {
+            src: settings.appIcon,
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any"
+          },
+          {
+            src: settings.appIcon,
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable any"
+          }
+        ]
+      };
+      
+      const stringManifest = JSON.stringify(manifest);
+      const blob = new Blob([stringManifest], { type: 'application/json' });
+      const manifestURL = URL.createObjectURL(blob);
+      
+      let manifestLink = document.querySelector('link[rel="manifest"]');
+      if (!manifestLink) {
+        manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        document.head.appendChild(manifestLink);
+      }
+      manifestLink.href = manifestURL;
+
+      return () => URL.revokeObjectURL(manifestURL);
+    }
+  }, [settings.appIcon, settings.gymName]);
 
   // ---- 2. Obtener datos extra del usuario (rol, nombre, perfil) ----
   const fetchUserData = async (authUser) => {
