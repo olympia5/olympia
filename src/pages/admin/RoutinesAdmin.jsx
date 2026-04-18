@@ -35,10 +35,17 @@ const RoutinesAdmin = () => {
   };
 
   const handleEdit = (routine) => {
+    // Asegurar que todos los días actuales existan en el objeto cargado (merge con DAYS)
+    const routineDays = routine.days || {};
+    const mergedDays = DAYS.reduce((acc, day) => ({
+      ...acc,
+      [day]: routineDays[day] || []
+    }), {});
+
     setForm({
       title: routine.title,
       goal: routine.goal,
-      days: routine.days || initialForm.days
+      days: mergedDays
     });
     setEditingId(routine.id);
     setShowForm(true);
@@ -179,11 +186,11 @@ const RoutinesAdmin = () => {
                 </button>
               </div>
 
-              {form.days[activeDay].length === 0 ? (
+              {(form.days[activeDay] || []).length === 0 ? (
                 <p className="text-xs text-white/20 italic text-center py-4">Sin ejercicios asignados para este día.</p>
               ) : (
                 <div className="space-y-3">
-                  {form.days[activeDay].map((ex, idx) => (
+                  {(form.days[activeDay] || []).map((ex, idx) => (
                     <div key={ex.id} className="grid grid-cols-12 gap-2 items-end bg-white/5 p-3 rounded-lg border border-white/5 group">
                       <div className="col-span-12 md:col-span-3">
                         <label className="text-[10px] text-white/30 uppercase block mb-1">Nombre</label>
