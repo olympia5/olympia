@@ -248,11 +248,21 @@ const SettingsTab = ({ settings, updateSettings }) => {
   const [form, setForm] = useState({ 
     ...settings,
     motivationalPhrases: settings.motivationalPhrases || [],
-    schedules: settings.schedules || []
+    schedules: settings.schedules || [],
+    socialLinks: settings.socialLinks || []
   });
 
+  // Solo sincronizar con los settings cargados si el form está vacío (inicialización)
   useEffect(() => {
-    setForm({ ...settings, motivationalPhrases: settings.motivationalPhrases || [], schedules: settings.schedules || [] });
+    if (settings && (form.socialLinks.length === 0 && settings.socialLinks?.length > 0)) {
+       setForm(prev => ({ 
+         ...prev, 
+         ...settings,
+         motivationalPhrases: settings.motivationalPhrases || prev.motivationalPhrases,
+         schedules: settings.schedules || prev.schedules,
+         socialLinks: settings.socialLinks || prev.socialLinks
+       }));
+    }
   }, [settings]);
 
   const [saved, setSaved] = useState(false);
@@ -353,46 +363,59 @@ const SettingsTab = ({ settings, updateSettings }) => {
 
       {/* SECCIÓN REDES SOCIALES */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
-        <h3 className="text-lg font-bebas tracking-widest text-white flex items-center gap-2">
-          <Link2 className="w-5 h-5 text-olympia-red" /> Redes Sociales
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="text-xs text-white/40 uppercase tracking-widest mb-1 block">WhatsApp</label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-2.5 w-4 h-4 text-white/20" />
-              <input
-                value={form.whatsapp || ''}
-                onChange={e => setForm({ ...form, whatsapp: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:border-olympia-red outline-none"
-                placeholder="Ej: 549341..."
-              />
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bebas tracking-widest text-white flex items-center gap-2">
+            <Link2 className="w-5 h-5 text-olympia-red" /> Redes Sociales
+          </h3>
+          <button 
+            onClick={() => setForm({ ...form, socialLinks: [...form.socialLinks, { name: '', url: '' }] })}
+            className="text-xs text-olympia-red hover:text-white transition-colors flex items-center gap-1 uppercase font-bold"
+          >
+            <Plus className="w-3 h-3" /> Añadir Red
+          </button>
+        </div>
+        
+        <div className="space-y-3">
+          {form.socialLinks.map((link, idx) => (
+            <div key={idx} className="grid grid-cols-12 gap-2 bg-black/20 p-3 rounded-xl border border-white/5 group">
+              <div className="col-span-4">
+                <input
+                  placeholder="Nombre (Ej: Instagram)"
+                  value={link.name}
+                  onChange={e => {
+                    const newL = [...form.socialLinks];
+                    newL[idx].name = e.target.value;
+                    setForm({ ...form, socialLinks: newL });
+                  }}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                />
+              </div>
+              <div className="col-span-7">
+                <input
+                  placeholder="URL o Link"
+                  value={link.url}
+                  onChange={e => {
+                    const newL = [...form.socialLinks];
+                    newL[idx].url = e.target.value;
+                    setForm({ ...form, socialLinks: newL });
+                  }}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                />
+              </div>
+              <div className="col-span-1 flex justify-end">
+                <button 
+                  onClick={() => {
+                    const newL = form.socialLinks.filter((_, i) => i !== idx);
+                    setForm({ ...form, socialLinks: newL });
+                  }}
+                  className="p-1.5 text-white/10 hover:text-red-500 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-          </div>
-          <div>
-            <label className="text-xs text-white/40 uppercase tracking-widest mb-1 block">Instagram</label>
-            <div className="relative">
-              <Instagram className="absolute left-3 top-2.5 w-4 h-4 text-white/20" />
-              <input
-                value={form.instagram || ''}
-                onChange={e => setForm({ ...form, instagram: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:border-olympia-red outline-none"
-                placeholder="Ej: @u_gym"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="text-xs text-white/40 uppercase tracking-widest mb-1 block">TikTok</label>
-            <div className="relative">
-              <Link2 className="absolute left-3 top-2.5 w-4 h-4 text-white/20" />
-              <input
-                value={form.tiktok || ''}
-                onChange={e => setForm({ ...form, tiktok: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:border-olympia-red outline-none"
-                placeholder="Ej: @u_gym_oficial"
-              />
-            </div>
-          </div>
+          ))}
+          {form.socialLinks.length === 0 && <p className="text-center py-4 text-white/20 text-xs italic">Carga tus redes sociales para que aparezcan en el contacto.</p>}
         </div>
       </div>
 

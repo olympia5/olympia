@@ -23,6 +23,7 @@ const mapSettingsToDB = (js) => {
   if (js.whatsapp !== undefined) db.whatsapp = js.whatsapp;
   if (js.tiktok !== undefined) db.tiktok = js.tiktok;
   if (js.appIcon !== undefined) db.app_icon = js.appIcon;
+  if (js.socialLinks !== undefined) db.social_links = js.socialLinks;
   return db;
 };
 
@@ -37,7 +38,8 @@ const mapSettingsFromDB = (db) => ({
   instagram: db.instagram,
   whatsapp: db.whatsapp,
   tiktok: db.tiktok,
-  appIcon: db.app_icon
+  appIcon: db.app_icon,
+  socialLinks: db.social_links || []
 });
 
 const AuthContext = createContext(null);
@@ -71,7 +73,8 @@ export const AuthProvider = ({ children }) => {
     instagram: '',
     whatsapp: '',
     tiktok: '',
-    appIcon: ''
+    appIcon: '',
+    socialLinks: []
   });
   const [clients, setClients] = useState([]);
   const [diets, setDiets] = useState([]);
