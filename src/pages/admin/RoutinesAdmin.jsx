@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Plus, X, Save, Trash2, Dumbbell, Edit3, ChevronRight, ChevronDown } from 'lucide-react';
 
-const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 const RoutinesAdmin = () => {
   const { routines, addRoutine, deleteRoutine, updateRoutine } = useAuth();

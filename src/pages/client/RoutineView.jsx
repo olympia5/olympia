@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Timer, Play, Pause, RotateCcw, Video, Dumbbell, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 const RoutineView = () => {
   const { user, routines } = useAuth();
