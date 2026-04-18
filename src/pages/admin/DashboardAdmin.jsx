@@ -351,6 +351,163 @@ const SettingsTab = ({ settings, updateSettings }) => {
         </div>
       </div>
 
+      {/* SECCIÓN REDES SOCIALES */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+        <h3 className="text-lg font-bebas tracking-widest text-white flex items-center gap-2">
+          <Link2 className="w-5 h-5 text-olympia-red" /> Redes Sociales
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="text-xs text-white/40 uppercase tracking-widest mb-1 block">WhatsApp</label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-2.5 w-4 h-4 text-white/20" />
+              <input
+                value={form.whatsapp || ''}
+                onChange={e => setForm({ ...form, whatsapp: e.target.value })}
+                className="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:border-olympia-red outline-none"
+                placeholder="Ej: 549341..."
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs text-white/40 uppercase tracking-widest mb-1 block">Instagram</label>
+            <div className="relative">
+              <Instagram className="absolute left-3 top-2.5 w-4 h-4 text-white/20" />
+              <input
+                value={form.instagram || ''}
+                onChange={e => setForm({ ...form, instagram: e.target.value })}
+                className="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:border-olympia-red outline-none"
+                placeholder="Ej: @u_gym"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs text-white/40 uppercase tracking-widest mb-1 block">TikTok</label>
+            <div className="relative">
+              <Link2 className="absolute left-3 top-2.5 w-4 h-4 text-white/20" />
+              <input
+                value={form.tiktok || ''}
+                onChange={e => setForm({ ...form, tiktok: e.target.value })}
+                className="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:border-olympia-red outline-none"
+                placeholder="Ej: @u_gym_oficial"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* SECCIÓN HORARIOS */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bebas tracking-widest text-white flex items-center gap-2">
+            <Clock className="w-5 h-5 text-olympia-red" /> Horarios de Apertura
+          </h3>
+          <button 
+            onClick={() => setForm({ ...form, schedules: [...form.schedules, { day: '', hours: '', activities: '' }] })}
+            className="text-xs text-olympia-red hover:text-white transition-colors flex items-center gap-1 uppercase font-bold"
+          >
+            <Plus className="w-3 h-3" /> Añadir Horario
+          </button>
+        </div>
+        
+        <div className="space-y-3">
+          {form.schedules.map((s, idx) => (
+            <div key={idx} className="grid grid-cols-12 gap-2 bg-black/20 p-3 rounded-xl border border-white/5 relative group">
+              <div className="col-span-4">
+                <input
+                  placeholder="Día (Lun-Vie)"
+                  value={s.day}
+                  onChange={e => {
+                    const newS = [...form.schedules];
+                    newS[idx].day = e.target.value;
+                    setForm({ ...form, schedules: newS });
+                  }}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                />
+              </div>
+              <div className="col-span-4">
+                <input
+                  placeholder="Horas (08:00 - 22:00)"
+                  value={s.hours}
+                  onChange={e => {
+                    const newS = [...form.schedules];
+                    newS[idx].hours = e.target.value;
+                    setForm({ ...form, schedules: newS });
+                  }}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                />
+              </div>
+              <div className="col-span-3">
+                <input
+                  placeholder="Actividades"
+                  value={s.activities}
+                  onChange={e => {
+                    const newS = [...form.schedules];
+                    newS[idx].activities = e.target.value;
+                    setForm({ ...form, schedules: newS });
+                  }}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                />
+              </div>
+              <div className="col-span-1 flex justify-end">
+                <button 
+                  onClick={() => {
+                    const newS = form.schedules.filter((_, i) => i !== idx);
+                    setForm({ ...form, schedules: newS });
+                  }}
+                  className="p-1.5 text-white/10 hover:text-red-500 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+          {form.schedules.length === 0 && <p className="text-center py-4 text-white/20 text-xs italic">Carga los horarios para que los socios los vean en la app.</p>}
+        </div>
+      </div>
+
+      {/* SECCIÓN FRASES */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bebas tracking-widest text-white flex items-center gap-2">
+            <Quote className="w-5 h-5 text-olympia-red" /> Frases Motivacionales
+          </h3>
+          <button 
+            onClick={() => setForm({ ...form, motivationalPhrases: [...form.motivationalPhrases, ''] })}
+            className="text-xs text-olympia-red hover:text-white transition-colors flex items-center gap-1 uppercase font-bold"
+          >
+            <Plus className="w-3 h-3" /> Añadir Frase
+          </button>
+        </div>
+        
+        <div className="space-y-3">
+          {form.motivationalPhrases.map((phrase, idx) => (
+            <div key={idx} className="flex gap-2 group">
+              <input
+                value={phrase}
+                onChange={e => {
+                  const newP = [...form.motivationalPhrases];
+                  newP[idx] = e.target.value;
+                  setForm({ ...form, motivationalPhrases: newP });
+                }}
+                className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+                placeholder="Escribe una frase guerrera..."
+              />
+              <button 
+                onClick={() => {
+                  const newP = form.motivationalPhrases.filter((_, i) => i !== idx);
+                  setForm({ ...form, motivationalPhrases: newP });
+                }}
+                className="p-2 text-white/10 hover:text-red-500 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+          {form.motivationalPhrases.length === 0 && <p className="text-center py-4 text-white/20 text-xs italic">Agrega frases para inspirar a tus socios cada día.</p>}
+        </div>
+      </div>
+
       {/* Otras secciones simplificadas */}
       <button onClick={handleSaveAll} className="btn-spartan w-full py-4 text-lg">
         {saved ? 'Cambios Guardados' : 'Guardar Todos los Cambios'}
