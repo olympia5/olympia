@@ -32,7 +32,6 @@ const SchedulePage = () => {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bebas text-white tracking-wider">{s.day}</h2>
-                  <p className="text-xs text-white/40 uppercase tracking-widest">{s.activities}</p>
                 </div>
               </div>
               <div className="text-right">
