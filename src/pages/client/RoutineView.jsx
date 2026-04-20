@@ -16,31 +16,33 @@ const RoutineView = () => {
   const [logForm, setLogForm] = useState({ weight: '', reps: '' });
   const [isSaving, setIsSaving] = useState(false);
   
-  // Timer State
-  const [seconds, setSeconds] = useState(0);
+  // Timer State (en milisegundos para precisión de cronómetro)
+  const [time, setTime] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const timerRef = useRef(null);
 
   useEffect(() => {
     if (isActive) {
       timerRef.current = setInterval(() => {
-        setSeconds(s => s + 1);
-      }, 1000);
+        setTime(t => t + 10);
+      }, 10);
     } else {
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
   }, [isActive]);
 
-  const formatTime = (totalSeconds) => {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  const formatTime = (ms) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    const centiseconds = Math.floor((ms % 1000) / 10);
+    
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
   };
 
   const handleReset = () => {
     setIsActive(false);
-    setSeconds(0);
+    setTime(0);
   };
 
   const goal = user?.profile?.goal;
@@ -100,12 +102,12 @@ const RoutineView = () => {
           </p>
         </div>
 
-        {/* --- CRONÓMETRO REAL --- */}
+        {/* --- CRONÓMETRO REAL (TIEMPO DE DESCANSO) --- */}
         <div className="bg-black/40 px-6 py-4 rounded-2xl border border-olympia-border flex items-center gap-5 shadow-inner">
           <div className="flex flex-col items-center">
-            <span className="text-[10px] text-olympia-muted uppercase tracking-widest mb-1">Tiempo de sesión</span>
-            <span className="font-mono text-3xl font-bold text-white tracking-tighter w-24 text-center">
-              {formatTime(seconds)}
+            <span className="text-[10px] text-olympia-red font-bold uppercase tracking-widest mb-1">Tiempo de descanso</span>
+            <span className="font-mono text-3xl font-bold text-white tracking-widest w-32 text-center">
+              {formatTime(time)}
             </span>
           </div>
           <div className="flex gap-2">
