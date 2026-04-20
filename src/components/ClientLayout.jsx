@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, Activity, Utensils, Clock, Image, Phone, CreditCard, Menu, X, LogOut } from 'lucide-react';
+import { Home, Activity, Utensils, Clock, Image, Phone, CreditCard, Menu, X, LogOut, Video } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const navLinks = [
@@ -9,6 +9,7 @@ const navLinks = [
   { to: '/cliente/dieta', icon: <Utensils className="w-4 h-4" />, label: 'Dieta' },
   { to: '/cliente/horarios', icon: <Clock className="w-4 h-4" />, label: 'Horarios' },
   { to: '/cliente/contacto', icon: <Phone className="w-4 h-4" />, label: 'Contacto' },
+  { to: '/cliente/tutoriales', icon: <Video className="w-4 h-4" />, label: 'Tutoriales' },
 ];
 
 const ClientLayout = () => {

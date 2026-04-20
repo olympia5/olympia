@@ -16,6 +16,7 @@ import ContactPage from './pages/client/ContactPage';
 import MembershipPage from './pages/client/MembershipPage';
 import ProfilePage from './pages/client/ProfilePage';
 import ProgressDashboard from './pages/client/ProgressDashboard';
+import TutorialsPage from './pages/client/TutorialsPage';
 
 // Admin pages
 import DashboardAdmin from './pages/admin/DashboardAdmin';
@@ -86,6 +87,7 @@ function App() {
           <Route path="membresia" element={<MembershipPage />} />
           <Route path="perfil" element={<ProfilePage />} />
           <Route path="progreso" element={<ProgressDashboard />} />
+          <Route path="tutoriales" element={<TutorialsPage />} />
         </Route>
 
         {/* ---- Rutas de Admin ---- */}

@@ -597,7 +597,7 @@ export const AuthProvider = ({ children }) => {
       addDiet, updateDiet, deleteDiet,
       addRoutine, updateRoutine, deleteRoutine,
       getSuggestedDiet, getSuggestedRoutine,
-      openDoor, getEvolutionHistory
+      openDoor, getEvolutionHistory, logPerformance, getPerformanceLogs
     }}>
       {children}
     </AuthContext.Provider>

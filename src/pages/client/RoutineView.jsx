@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 const RoutineView = () => {
-  const { user, routines } = useAuth();
+  const { user, routines, logPerformance } = useAuth();
   
   // Detectar día actual para el valor por defecto
   const todayIndex = new Date().getDay(); // 0-6 (Dom-Sab)
@@ -13,6 +13,8 @@ const RoutineView = () => {
   
   const [activeDay, setActiveDay] = useState(initialDay);
   const [activeExercise, setActiveExercise] = useState(null);
+  const [logForm, setLogForm] = useState({ weight: '', reps: '' });
+  const [isSaving, setIsSaving] = useState(false);
   
   // Timer State
   const [seconds, setSeconds] = useState(0);
@@ -217,15 +219,21 @@ const RoutineView = () => {
                             disabled={!logForm.weight || !logForm.reps || isSaving}
                             onClick={async () => {
                               setIsSaving(true);
-                              await logPerformance({
-                                exercise_name: ex.name,
-                                weight_kg: Number(logForm.weight),
-                                reps: Number(logForm.reps),
-                                sets: Number(ex.series || 4)
-                              });
-                              setIsSaving(false);
-                              setActiveExercise(null);
-                              setLogForm({ weight: '', reps: '' });
+                              try {
+                                await logPerformance({
+                                  exercise_name: ex.name,
+                                  weight_kg: Number(logForm.weight),
+                                  reps: Number(logForm.reps),
+                                  sets: Number(ex.series || 4)
+                                });
+                                setActiveExercise(null);
+                                setLogForm({ weight: '', reps: '' });
+                                alert('¡Récord guardado!');
+                              } catch (err) {
+                                console.error(err);
+                              } finally {
+                                setIsSaving(false);
+                              }
                             }}
                             className="bg-olympia-red hover:bg-red-700 disabled:opacity-30 text-white font-bold h-[50px] px-6 rounded-xl uppercase tracking-widest text-[10px] transition-all"
                           >
@@ -253,9 +261,6 @@ const RoutineView = () => {
                       }}
                     >
                       {activeExercise === ex.id ? 'Cancelar Carga' : 'Cargar Peso / Completar'}
-                    </button>
-                    <button className="px-5 py-4 bg-white/5 text-white/30 border border-white/10 rounded-xl hover:text-olympia-red transition-all transition-colors flex items-center justify-center">
-                      <Video className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
