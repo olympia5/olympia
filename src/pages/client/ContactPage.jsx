@@ -47,32 +47,35 @@ const ContactPage = () => {
 
         {/* Social media cards */}
         <div className="grid gap-4">
-          {settings.socialLinks?.map((c, idx) => (
-            <a
-              key={idx}
-              href={c.url.startsWith('http') ? c.url : `https://${c.url}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center justify-between p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-olympia-red/10 hover:border-olympia-red/30 transition-all duration-300"
-            >
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 rounded-2xl bg-olympia-red/10 flex items-center justify-center text-olympia-red">
-                  {c.name.toLowerCase().includes('insta') ? <Instagram className="w-6 h-6" /> : 
-                   c.name.toLowerCase().includes('tik') ? <Music2 className="w-6 h-6" /> : 
-                   c.name.toLowerCase().includes('whatsapp') ? <MessageCircle className="w-6 h-6" /> : 
-                   <ExternalLink className="w-6 h-6" />}
+          {settings?.socialLinks?.map((c, idx) => {
+            if (!c?.name || !c?.url) return null;
+            return (
+              <a
+                key={idx}
+                href={c.url.startsWith('http') ? c.url : `https://${c.url}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center justify-between p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-olympia-red/10 hover:border-olympia-red/30 transition-all duration-300"
+              >
+                <div className="flex items-center gap-5">
+                  <div className="w-14 h-14 rounded-2xl bg-olympia-red/10 flex items-center justify-center text-olympia-red">
+                    {c.name.toLowerCase().includes('insta') ? <Instagram className="w-6 h-6" /> : 
+                     c.name.toLowerCase().includes('tik') ? <Music2 className="w-6 h-6" /> : 
+                     c.name.toLowerCase().includes('whatsapp') ? <MessageCircle className="w-6 h-6" /> : 
+                     <ExternalLink className="w-6 h-6" />}
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bebas tracking-widest text-white">{c.name}</p>
+                    <p className="text-xs text-white/40 uppercase tracking-widest">{c.url.replace('https://', '').replace('http://', '')}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-2xl font-bebas tracking-widest text-white">{c.name}</p>
-                  <p className="text-xs text-white/40 uppercase tracking-widest">{c.url.replace('https://', '').replace('http://', '')}</p>
+                <div className="flex items-center gap-2 bg-white/5 group-hover:bg-olympia-red text-white px-4 py-2 rounded-xl transition-all">
+                  <span className="text-xs font-bold uppercase tracking-widest">Seguir</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </div>
-              </div>
-              <div className="flex items-center gap-2 bg-white/5 group-hover:bg-olympia-red text-white px-4 py-2 rounded-xl transition-all">
-                <span className="text-xs font-bold uppercase tracking-widest">Seguir</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </div>
-            </a>
-          ))}
+              </a>
+            );
+          })}
 
           {/* Placeholder if no contacts configured */}
           {(!settings.socialLinks || settings.socialLinks.length === 0) && (
