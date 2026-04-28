@@ -189,21 +189,31 @@ export const AuthProvider = ({ children }) => {
   // ---- 2. Obtener datos extra del usuario (rol, nombre, perfil) ----
   const fetchUserData = async (authUser) => {
     try {
-      // 1. Obtener datos de la tabla 'clients'
-      const { data: clientData, error: clientErr } = await supabase
+      // 1. Obtener datos de la tabla 'clients' (opcional para admins)
+      const { data: clientData } = await supabase
         .from('clients')
         .select('*')
         .eq('id', authUser.id)
-        .single();
+        .maybeSingle();
 
-      if (clientErr) throw clientErr;
+      // 2. Determinar Rol (Prioridad: Metadata > DB > Email)
+      let role = authUser.app_metadata?.role || authUser.user_metadata?.role;
+      if (!role) {
+        role = clientData?.role;
+      }
+      if (!role && authUser.email.toLowerCase().includes('admin')) {
+        role = 'admin';
+      }
+      if (!role) {
+        role = 'client';
+      }
 
-      // 2. Obtener perfil y mapear a nombres de frontend
+      // 3. Obtener perfil
       const { data: rawProfile } = await supabase
         .from('client_profiles')
         .select('*')
         .eq('client_id', authUser.id)
-        .single();
+        .maybeSingle();
 
       const profile = rawProfile ? {
         weight: rawProfile.weight_kg,
@@ -218,19 +228,22 @@ export const AuthProvider = ({ children }) => {
       // Combinar todo en el estado del usuario
       const userData = {
         ...authUser,
-        ...clientData,
+        ...(clientData || {}),
         profile,
-        role: clientData.role || 'client'
+        role,
+        name: clientData?.name || authUser.user_metadata?.full_name || authUser.email.split('@')[0]
       };
 
+      console.log("Login exitoso:", userData.email, "| Rol:", userData.role);
       setUser(userData);
       
-      // Si es admin, cargar lista completa de clientes
       if (userData.role === 'admin') {
         fetchAllData();
       }
     } catch (err) {
       console.error("Error fetching user data:", err);
+      // Fallback para no bloquear
+      setUser({ ...authUser, role: 'client', name: authUser.email.split('@')[0] });
     } finally {
       setLoading(false);
     }
