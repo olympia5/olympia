@@ -103,29 +103,31 @@ const RoutineView = () => {
         </div>
 
         {/* --- CRONÓMETRO REAL (TIEMPO DE DESCANSO) --- */}
-        <div className="bg-black/40 px-6 py-4 rounded-2xl border border-olympia-border flex items-center gap-5 shadow-inner">
+        <div className="bg-black/40 px-6 py-4 rounded-2xl border border-olympia-border flex flex-col items-center justify-center gap-3 shadow-inner min-w-[220px]">
           <div className="flex flex-col items-center">
             <span className="text-[10px] text-olympia-red font-bold uppercase tracking-widest mb-1">Tiempo de descanso</span>
-            <span className="font-mono text-3xl font-bold text-white tracking-widest w-32 text-center">
+            <span className="font-mono text-4xl font-bold text-white tracking-widest text-center">
               {formatTime(time)}
             </span>
           </div>
-          <div className="flex gap-2">
-            <button 
+          <div className="flex items-center justify-center gap-4 w-full mt-1">
+            {/* Botón Play / Pause */}
+            <button
               onClick={() => setIsActive(!isActive)}
-              className={`p-3 rounded-xl transition-all ${
+              className={`p-3 rounded-xl transition-all flex items-center justify-center w-16 ${
                 isActive 
-                ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/30' 
-                : 'bg-green-500/10 text-green-500 border border-green-500/30'
+                  ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/30' 
+                  : 'bg-green-500/10 text-green-500 border border-green-500/30'
               }`}
             >
-              {isActive ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+              {isActive ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
             </button>
-            <button 
+            {/* Botón Reset */}
+            <button
               onClick={handleReset}
-              className="p-3 bg-white/5 text-white/40 border border-white/10 rounded-xl hover:text-white transition-all transition-colors"
+              className="p-3 bg-white/5 text-white/40 border border-white/10 rounded-xl hover:text-white transition-all flex items-center justify-center w-16"
             >
-              <RotateCcw className="w-5 h-5" />
+              <RotateCcw className="w-6 h-6" />
             </button>
           </div>
         </div>
